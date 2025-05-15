@@ -1,0 +1,103 @@
+% ==============================================================================
+% Projeto de Sistema - Matheus De Oliveira Lima
+% Capítulo 2 - Plataforma de Desenvolvimento
+% ==============================================================================
+\chapter{Plataforma de Desenvolvimento}
+\label{sec-plataforma}
+\vspace{-1cm}
+
+
+%\vitor{Esta seção deve apresentar a plataforma de implementação a ser adotada para o desenvolvimento do sistema, incluindo: linguagem de programação, mecanismo de persistência de dados e componentes ou \textit{frameworks} a serem usados. As tabelas abaixo trazem exemplos (defasados) que devem ser adaptados para o contexto do seu projeto.}
+
+
+%=======================================================================================================
+%			Tabela de Plataforma de Desenvolvimento e Tecnologias Utilizadas
+%=======================================================================================================
+
+Na Tabela~\ref{tabela-plataforma} são listadas as tecnologias utilizadas no desenvolvimento da ferramenta, bem como o propósito de sua utilização.
+
+\begin{footnotesize}
+\begin{longtable}{|p{1.8cm}|c|p{5cm}|p{6.3cm}|}
+	\caption{Plataforma de Desenvolvimento e Tecnologias Utilizadas.}	
+	\label{tabela-plataforma}\\\hline
+
+	\rowcolor{lightgray}
+	\textbf{Tecnologia} & \textbf{Versão} & \textbf{Descrição} & \textbf{Propósito} \\\hline 
+	\endfirsthead
+	\hline
+	\rowcolor{lightgray}
+	\textbf{Tecnologia} & \textbf{Versão} & \textbf{Descrição} & \textbf{Propósito} \\\hline 
+	\endhead
+		
+	React.js & 18+ & Biblioteca JavaScript para interfaces dinâmicas & Frontend responsivo para alunos e admin \\ \hline
+	
+	TypeScript & 5.x & Superset tipado de JavaScript & Frontend responsivo para alunos e admin \\ \hline
+	
+	Spring Boot & 3.2.x (Java 17) & Framework backend Java & API RESTful segura e escalável \\ \hline
+	
+	Spring Web MVC & 6.1.x & Módulo para construção de APIs REST & Rotas HTTP e serialização JSON \\ \hline
+	
+	Spring Security & 6.1.x & Autenticação e autorização & Controle de acesso (JWT) \\ \hline
+	
+	Spring Data JPA & 3.1.x & Persistência com Hibernate & Operações de banco de dados (PostgreSQL) \\ \hline
+	
+	PostgreSQL & 15+ & Banco de dados relacional & Armazenar usuários, cursos e progresso \\ \hline
+	
+	jjwt & 0.12.x & Biblioteca para JWT & Geração/validação de tokens \\ \hline
+	
+	Lombok & 1.18.x & Redução de boilerplate em classes Java & Getters/Setters automáticos \\ \hline
+	
+	Hibernate Validator & 8.0.x & Validação de dados em DTOs & Validar entradas de API (ex.: @Email, @NotBlank) \\ \hline
+	
+	React Router & 6.x & Roteamento no frontend & Navegação entre páginas \\ \hline
+	
+	Axios & 1.x & Cliente HTTP para frontend & Consumir API do backend \\ \hline
+	
+	Material-UI & 5.x & Biblioteca de componentes UI & Design consistente e responsivo \\ \hline
+	
+\end{longtable}
+\end{footnotesize}
+
+
+
+
+
+
+%=======================================================================================================
+%			Tabela de Softwares de Apoio ao Desenvolvimento do Projeto
+%=======================================================================================================
+
+Na Tabela~\ref{tabela-software} vemos os softwares que apoiaram o desenvolvimento de documentos e também do código fonte.
+
+\begin{footnotesize}
+\begin{longtable}{|p{2.5cm}|c|p{5cm}|p{5.5cm}|}
+	\caption{Softwares de Apoio ao Desenvolvimento do Projeto}	
+	\label{tabela-software}\\\hline
+	
+	\rowcolor{lightgray}
+	\textbf{Tecnologia} & \textbf{Versão} & \textbf{Descrição} & \textbf{Propósito} \\\hline 
+	\endfirsthead
+	\hline
+	\rowcolor{lightgray}
+	\textbf{Tecnologia} & \textbf{Versão} & \textbf{Descrição} & \textbf{Propósito} \\\hline 
+	\endhead
+	
+	PgAdmin 4 & 7.x+ & Interface gráfica para PostgreSQL & Gerenciar visualmente o banco de dados \\\hline
+	
+	IntelliJ IDEA & 2023.2+ & IDE para Java/Spring Boot & Desenvolvimento backend com debug integrado \\\hline 
+	
+	VS Code & 1.80+ & Editor para React/TypeScript & Codificação do frontend com extensões úteis \\\hline
+	
+	Postman & 10+ & Teste de APIs & Validar endpoints do Spring Boot \\\hline 
+	
+	Git & 2.40+ & Controle de versão & Gerenciar colaboração no código \\\hline 
+	 
+	FrameWeb Editor & 1.0 & Ferramenta CASE do método FrameWeb. & Criação dos modelos de Entidades, Aplicação, Persistência e Navegação. \\\hline
+
+	TeX Live  & 2018 & Implementação do \LaTeX & Documentação do projeto arquitetural do sistema. \\\hline       
+	
+	TeXstudio & 4.8.7 & Editor de LaTeX. &  Escrita da documentação do sistema, sendo usado o \textit{template} \textit{abnTeX}.\footnote{\url{http://www.abntex.net.br}.} \\\hline    
+	
+	Apache Maven & 3.5 & Ferramenta de gerência/construção de projetos de software. & Obtenção e integração das dependências do projeto. \\\hline
+\end{longtable}
+\end{footnotesize}
