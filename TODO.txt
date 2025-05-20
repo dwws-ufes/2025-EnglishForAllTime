@@ -1,0 +1,29 @@
+- Necessário fazer o CIU (views, controllers e services) e CGD (JPA e JPADAO)
+
+/UserController
+  - login()
+  - register()
+  - getCurrentUser()
+  - updateProfile()
+
+/CourseController
+  - getAllCourses()
+  - getCourseById(id)
+  - createCourse()
+
+/ModuleController
+  - getModulesByCourse(courseId)
+
+/LessonController
+  - getLessonsByModule(moduleId)
+
+/ProgressController
+  - getProgressByUser()
+  - updateProgress()
+
+
+[LoginPage] => [HomePage] => [CourseListPage] => [CourseDetailPage] => [ModulePage] => [LessonPage]
+
+[RegisterPage] => [HomePage]
+
+[ProfilePage] => [EditProfilePage]
