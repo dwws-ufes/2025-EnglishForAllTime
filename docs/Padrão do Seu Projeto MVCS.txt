@@ -1,0 +1,14 @@
+Padrão do Seu Projeto: MVC Híbrido (ou "MVCS")
+Frontend (React):
+
+View: Componentes React (pages/, components/).
+
+Controller (implícito): Serviços (services/) que chamam a API (Axios).
+
+Backend (Spring Boot):
+
+Controller: Endpoints REST (@RestController).
+
+Service: Lógica de negócio (@Service).
+
+Model: Entidades JPA (@Entity) + DTOs.

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.11.27)  15 MAY 2025 14:05
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.11.27)  23 MAY 2025 10:38
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1564,8 +1564,11 @@ l.276 \newpage
                [1
 
 
-] (./capitulos/ch1-introducao.tex)
-(./capitulos/ch2-plataforma.tex
+] (./capitulos/ch1-introducao.tex
+
+LaTeX Warning: Reference `sec-rnfs' on page 2 undefined on input line 17.
+
+) (./capitulos/ch2-plataforma.tex
 Overfull \hbox (0.96431pt too wide) in paragraph at lines 25--25
 []|\T1/lmr/bx/n/10 (-20) Tecnologia| 
  []
@@ -1596,11 +1599,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 50--50
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 56--56
-[]|\T1/lmr/m/n/10 (+20) Material-
- []
-
-
 Overfull \hbox (32.59305pt too wide) in alignment at lines 30--58
  [] [] [] [] 
  []
@@ -1621,40 +1619,46 @@ Underfull \hbox (badness 10000) in paragraph at lines 85--85
  []
 
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 97.
+(Font)              <10> on input line 99.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 97.
+(Font)              <7> on input line 99.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 97.
+(Font)              <5> on input line 99.
 
-Overfull \hbox (0.44151pt too wide) in alignment at lines 83--102
+Overfull \hbox (0.44151pt too wide) in alignment at lines 83--104
  [] [] [] [] 
  []
 
-) (./capitulos/ch3-rnfs.tex
-\c@rnfcount=\count438
- [3]) (./capitulos/ch4-arquitetura.tex
-<figuras/figura-arquitetura-padrao.png, id=55, 4907.33376pt x 3079.505pt>
-File: figuras/figura-arquitetura-padrao.png Graphic file (type png)
-<use figuras/figura-arquitetura-padrao.png>
-Package pdftex.def Info: figuras/figura-arquitetura-padrao.png  used on input l
-ine 10.
-(pdftex.def)             Requested size: 364.00139pt x 228.41548pt.
+) (./capitulos/ch4-arquitetura.tex
+<figuras/architecture.png, id=40, 496.85625pt x 584.1825pt>
+File: figuras/architecture.png Graphic file (type png)
+<use figuras/architecture.png>
+Package pdftex.def Info: figuras/architecture.png  used on input line 10.
+(pdftex.def)             Requested size: 364.00139pt x 427.98286pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-Package hyperref Info: bookmark level for unknown todo defaults to 0 on input l
-ine 15.
-) (./capitulos/ch5-frameweb.tex
 
-[4]) (./projeto-EnglishForAllTime.bbl (./projeto-EnglishForAllTime.brf)
+
+[3]
+
+[4 <./figuras/architecture.png>]
+
+LaTeX Warning: Citation `bauer:hibernate06' on page 5 undefined on input line 2
+1.
+
+) (./capitulos/ch5-frameweb.tex
+Package hyperref Info: bookmark level for unknown todo defaults to 0 on input l
+ine 10.
+) (./projeto-EnglishForAllTime.bbl
+(./projeto-EnglishForAllTime.brf)
 \tf@brf=\write6
 \openout6 = `projeto-EnglishForAllTime.brf'.
 
 
 
-[5 <./figuras/figura-arquitetura-padrao.png>]
+[5]
 
 [6]
 bibitemlist
@@ -1675,35 +1679,35 @@ enddocument/afterlastpage: lastpage setting LastPage.
 LaTeX2e <2024-11-01> patch level 1
 L3 programming layer <2020/03/25>
  ***********
+
+
+LaTeX Warning: There were undefined references.
+
 Package rerunfilecheck Info: File `projeto-EnglishForAllTime.brf' has not chang
 ed.
-(rerunfilecheck)             Checksum: D7F819C403C7BAF937992396E7B479C5;102.
+(rerunfilecheck)             Checksum: 5D84CE85A1946E89F1FB495A43E1F095;164.
  ) 
 Here is how much of TeX's memory you used:
- 35726 strings out of 473330
- 638538 string characters out of 5723877
- 1182848 words of memory out of 5000000
- 58066 multiletter control sequences out of 15000+600000
- 639025 words of font info for 141 fonts, out of 8000000 for 9000
+ 35743 strings out of 473330
+ 638577 string characters out of 5723877
+ 1109547 words of memory out of 5000000
+ 58061 multiletter control sequences out of 15000+600000
+ 640602 words of font info for 157 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 99i,12n,117p,1022b,1107s stack positions out of 10000i,1000n,20000p,200000b,200000s
-
-pdfTeX warning (dest): name{Hfootnote.1} has been referenced but does not exist
-, replaced by a fixed one
-
-<c:/texlive/2024/texmf-dist/fonts/type1/public/lm/lmbx10.pfb><c:/texlive/2024/t
-exmf-dist/fonts/type1/public/lm/lmbx12.pfb><c:/texlive/2024/texmf-dist/fonts/ty
-pe1/public/lm/lmbxi10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/lm/lmr
-10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/lm/lmr12.pfb><c:/texlive/
-2024/texmf-dist/fonts/type1/public/lm/lmr7.pfb><c:/texlive/2024/texmf-dist/font
-s/type1/public/lm/lmri10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/lm/
-lmri12.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/lm/lmss12.pfb><c:/tex
-live/2024/texmf-dist/fonts/type1/public/lm/lmss17.pfb><c:/texlive/2024/texmf-di
-st/fonts/type1/public/lm/lmssbx10.pfb>
-Output written on projeto-EnglishForAllTime.pdf (8 pages, 2278029 bytes).
+ 99i,12n,117p,1022b,1091s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<c:/texlive/2024/texmf-dist/fonts/type1/public/lm/lmbx10.pfb><c:/texlive/2024
+/texmf-dist/fonts/type1/public/lm/lmbx12.pfb><c:/texlive/2024/texmf-dist/fonts/
+type1/public/lm/lmbxi10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/lm/l
+mr10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/lm/lmr12.pfb><c:/texliv
+e/2024/texmf-dist/fonts/type1/public/lm/lmr7.pfb><c:/texlive/2024/texmf-dist/fo
+nts/type1/public/lm/lmri10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/l
+m/lmri12.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/lm/lmss12.pfb><c:/t
+exlive/2024/texmf-dist/fonts/type1/public/lm/lmss17.pfb><c:/texlive/2024/texmf-
+dist/fonts/type1/public/lm/lmssbx10.pfb>
+Output written on projeto-EnglishForAllTime.pdf (8 pages, 623224 bytes).
 PDF statistics:
- 193 PDF objects out of 1000 (max. 8388607)
- 156 compressed objects within 2 object streams
- 38 named destinations out of 1000 (max. 500000)
- 45151 words of extra memory for PDF output out of 51595 (max. 10000000)
+ 175 PDF objects out of 1000 (max. 8388607)
+ 138 compressed objects within 2 object streams
+ 31 named destinations out of 1000 (max. 500000)
+ 45143 words of extra memory for PDF output out of 51595 (max. 10000000)
 
