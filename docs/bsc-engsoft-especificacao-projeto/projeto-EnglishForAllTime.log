@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.11.27)  23 MAY 2025 10:38
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.11.27)  24 MAY 2025 17:55
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1630,11 +1630,11 @@ Overfull \hbox (0.44151pt too wide) in alignment at lines 83--104
  []
 
 ) (./capitulos/ch4-arquitetura.tex
-<figuras/architecture.png, id=40, 496.85625pt x 584.1825pt>
-File: figuras/architecture.png Graphic file (type png)
-<use figuras/architecture.png>
-Package pdftex.def Info: figuras/architecture.png  used on input line 10.
-(pdftex.def)             Requested size: 364.00139pt x 427.98286pt.
+<figuras/architecture_novo.png, id=40, 807.7678pt x 532.99126pt>
+File: figuras/architecture_novo.png Graphic file (type png)
+<use figuras/architecture_novo.png>
+Package pdftex.def Info: figuras/architecture_novo.png  used on input line 10.
+(pdftex.def)             Requested size: 364.00139pt x 240.17729pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
@@ -1642,25 +1642,94 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 
 
 [3]
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 2
+2.
+ (c:/texlive/2024/texmf-dist/tex/latex/lm/ts1lmr.fd
+File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 2
+2.
 
-[4 <./figuras/architecture.png>]
+(c:/texlive/2024/texmf-dist/tex/latex/lm/t1lmtt.fd
+File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <12> not available
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 22.
+Package microtype Info: Loading generic protrusion settings for font family
+(microtype)             `lmtt' (encoding: T1).
+(microtype)             For optimal results, create family-specific settings.
+(microtype)             See the microtype manual for details.
 
-LaTeX Warning: Citation `bauer:hibernate06' on page 5 undefined on input line 2
-1.
 
-) (./capitulos/ch5-frameweb.tex
+[4{c:/texlive/2024/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc} <./figuras/archite
+cture_novo.png>]) (./capitulos/ch5-frameweb.tex [5]
+<figuras/domain.png, id=73, 826.58812pt x 529.22719pt>
+File: figuras/domain.png Graphic file (type png)
+<use figuras/domain.png>
+Package pdftex.def Info: figuras/domain.png  used on input line 48.
+(pdftex.def)             Requested size: 364.00139pt x 233.05449pt.
+<figuras/persistence.png, id=75, 833.36343pt x 412.54124pt>
+File: figuras/persistence.png Graphic file (type png)
+<use figuras/persistence.png>
+Package pdftex.def Info: figuras/persistence.png  used on input line 64.
+(pdftex.def)             Requested size: 364.00139pt x 180.19049pt.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+
+[6 <./figuras/domain.png>]
 Package hyperref Info: bookmark level for unknown todo defaults to 0 on input l
-ine 10.
-) (./projeto-EnglishForAllTime.bbl
-(./projeto-EnglishForAllTime.brf)
+ine 88.
+)
+Overfull \hbox (39.35837pt too wide) in paragraph at lines 90--299
+[]\T1/lmr/m/n/12 (-20) adpoaskdpoasjkdpoasjdpoasjkdpoasjdposajdopasjdpoasdpoasd
+opasdpoasjdposajdpoasjdopj
+ []
+
+
+Overfull \hbox (2.3697pt too wide) in paragraph at lines 90--299
+\T1/lmr/m/n/12 (-20) ad-po-askd-po-asjkd-po-asjd-po-asjkd-po-asjd-po-saj-do-pas
+jd-po-asd-po-as-do-pasdpoasjdposajdpoasjdopj
+ []
+
+
+Overfull \hbox (2.3697pt too wide) in paragraph at lines 90--299
+\T1/lmr/m/n/12 (-20) ad-po-askd-po-asjkd-po-asjd-po-asjkd-po-asjd-po-saj-do-pas
+jd-po-asd-po-as-do-pasdpoasjdposajdpoasjdopj
+ []
+
+
+Overfull \hbox (2.3697pt too wide) in paragraph at lines 90--299
+\T1/lmr/m/n/12 (-20) ad-po-askd-po-asjkd-po-asjd-po-asjkd-po-asjd-po-saj-do-pas
+jd-po-asd-po-as-do-pasdpoasjdposajdpoasjdopj
+ []
+
+
+Overfull \hbox (2.3697pt too wide) in paragraph at lines 90--299
+\T1/lmr/m/n/12 (-20) ad-po-askd-po-asjkd-po-asjd-po-asjkd-po-asjd-po-saj-do-pas
+jd-po-asd-po-as-do-pasdpoasjdposajdpoasjdopj
+ []
+
+
+Overfull \hbox (2.3697pt too wide) in paragraph at lines 90--299
+\T1/lmr/m/n/12 (-20) ad-po-askd-po-asjkd-po-asjd-po-asjkd-po-asjd-po-saj-do-pas
+jd-po-asd-po-as-do-pasdpoasjdposajdpoasjdopj
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 90--299
+
+ []
+
+(./projeto-EnglishForAllTime.bbl (./projeto-EnglishForAllTime.brf)
 \tf@brf=\write6
 \openout6 = `projeto-EnglishForAllTime.brf'.
 
 
 
-[5]
-
-[6]
+[7 <./figuras/persistence.png>]
 bibitemlist
 )
 No file projeto-EnglishForAllTime.ind.
@@ -1670,7 +1739,7 @@ See the caption package documentation for explanation.
 
 
 
-[7
+[8
 
 ] 
 enddocument/afterlastpage: lastpage setting LastPage.
@@ -1685,16 +1754,16 @@ LaTeX Warning: There were undefined references.
 
 Package rerunfilecheck Info: File `projeto-EnglishForAllTime.brf' has not chang
 ed.
-(rerunfilecheck)             Checksum: 5D84CE85A1946E89F1FB495A43E1F095;164.
+(rerunfilecheck)             Checksum: 8F3238474DE7B2F6B6DF0713E1EE088C;56.
  ) 
 Here is how much of TeX's memory you used:
- 35743 strings out of 473330
- 638577 string characters out of 5723877
+ 35872 strings out of 473330
+ 640888 string characters out of 5723877
  1109547 words of memory out of 5000000
- 58061 multiletter control sequences out of 15000+600000
- 640602 words of font info for 157 fonts, out of 8000000 for 9000
+ 58145 multiletter control sequences out of 15000+600000
+ 642720 words of font info for 175 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 99i,12n,117p,1022b,1091s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 99i,12n,117p,1022b,996s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2024/texmf-dist/fonts/type1/public/lm/lmbx10.pfb><c:/texlive/2024
 /texmf-dist/fonts/type1/public/lm/lmbx12.pfb><c:/texlive/2024/texmf-dist/fonts/
 type1/public/lm/lmbxi10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/lm/l
@@ -1703,11 +1772,12 @@ e/2024/texmf-dist/fonts/type1/public/lm/lmr7.pfb><c:/texlive/2024/texmf-dist/fo
 nts/type1/public/lm/lmri10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/l
 m/lmri12.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/lm/lmss12.pfb><c:/t
 exlive/2024/texmf-dist/fonts/type1/public/lm/lmss17.pfb><c:/texlive/2024/texmf-
-dist/fonts/type1/public/lm/lmssbx10.pfb>
-Output written on projeto-EnglishForAllTime.pdf (8 pages, 623224 bytes).
+dist/fonts/type1/public/lm/lmssbx10.pfb><c:/texlive/2024/texmf-dist/fonts/type1
+/public/lm/lmtk10.pfb>
+Output written on projeto-EnglishForAllTime.pdf (9 pages, 807796 bytes).
 PDF statistics:
- 175 PDF objects out of 1000 (max. 8388607)
- 138 compressed objects within 2 object streams
- 31 named destinations out of 1000 (max. 500000)
- 45143 words of extra memory for PDF output out of 51595 (max. 10000000)
+ 206 PDF objects out of 1000 (max. 8388607)
+ 161 compressed objects within 2 object streams
+ 35 named destinations out of 1000 (max. 500000)
+ 47745 words of extra memory for PDF output out of 51595 (max. 10000000)
 
