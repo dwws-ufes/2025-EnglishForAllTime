@@ -1,29 +1,52 @@
-- Necessário fazer o CIU (views, controllers e services) e CGD (JPA e JPADAO)
+1. Navegação para Visualizar Cursos (Listagem por Dificuldade)
+Tipo: Consulta com aplicação de lógica de negócio (não CRUD)
+Funcionalidade: Permitir ao usuário visualizar cursos disponíveis agrupados por nível de dificuldade.
 
-/UserController
-  - login()
-  - register()
-  - getCurrentUser()
-  - updateProfile()
+[HomeView]
+    |
+    |---> [CourseController.retrieveAllByDifficulty()]
+                 |
+                 v
+         [CourseService.retrieveAllByDifficulty()]
+                 |
+                 v
+         [CourseDAO.findAllGroupedByDifficulty()]
+                 |
+                 v
+        [CourseListByDifficultyView] (exibe lista de cursos separados por dificuldade)
 
-/CourseController
-  - getAllCourses()
-  - getCourseById(id)
-  - createCourse()
-
-/ModuleController
-  - getModulesByCourse(courseId)
-
-/LessonController
-  - getLessonsByModule(moduleId)
-
-/ProgressController
-  - getProgressByUser()
-  - updateProgress()
+2. Navegação para Visualizar Módulos de um Curso
+Tipo: Consulta relacional (não CRUD)
+Funcionalidade: Exibir todos os módulos pertencentes a um curso específico selecionado pelo usuário.
 
 
-[LoginPage] => [HomePage] => [CourseListPage] => [CourseDetailPage] => [ModulePage] => [LessonPage]
+[CourseDetailView] (usuário seleciona um curso)
+    |
+    |---> [ModuleController.getModulesByCourse(courseId)]
+                 |
+                 v
+         [ModuleService.getModulesByCourse(courseId)]
+                 |
+                 v
+         [ModuleDAO.findByCourseId(courseId)]
+                 |
+                 v
+        [ModuleListView] (exibe os módulos relacionados ao curso)
 
-[RegisterPage] => [HomePage]
 
-[ProfilePage] => [EditProfilePage]
+3. Navegação para Marcar Lição como Concluída
+Tipo: Ação com persistência (não CRUD básico; envolve lógica de negócio de progresso)
+Funcionalidade: Atualizar o progresso de um usuário marcando a lição como concluída.
+
+[LessonDetailView] (botão: "Marcar como concluída")
+    |
+    |---> [UserProgressController.markLessonAsCompleted(userId, lessonId)]
+                 |
+                 v
+         [UserProgressService.markLessonAsCompleted(userId, lessonId)]
+                 |
+                 v
+         [UserProgressDAO.saveOrUpdateProgress(userId, lessonId)]
+                 |
+                 v
+        [LessonDetailView] (atualiza exibição com feedback de progresso)
