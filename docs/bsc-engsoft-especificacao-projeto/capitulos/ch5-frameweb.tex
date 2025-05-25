@@ -52,6 +52,17 @@ A figura~\ref{domain} mostra o projeto da Camada de Negócio (pacote \textsf{dom
 
 Dentro do pacote \textsf{domain}, existem as entidades em verde escuro que são usadas como base das regras de negócio e da persistência de dados; enquanto as classes em azul claro, são tipos enumerados que representam classificações de usuário dentro do sistema (\textsf{Role}) e identificação da dificuldade de um curso (\textsf{Difficulty}).
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.8\textwidth]{figuras/application.png}
+	\caption{Projeto da Camada de Negócio (\textsf{application})}
+	\label{application}
+\end{figure}
+
+A arquitetura apresentada na Figura~\ref{application} ilustra a integração entre os pacotes Controller, Application e Persistence, os quais, em conjunto, viabilizam o retorno ao frontend dos resultados decorrentes da aplicação das regras de negócio solicitadas.
+
+Vale destacar que, por se tratarem de operações básicas comuns a todas as entidades, as classes responsáveis pelas operações CRUD (\textsf{create, read, update e delete}) não foram explicitamente representadas na figura. Além disso, embora os métodos dos \textsf{controllers} retornem os dados encapsulados em objetos do tipo \textsf{ResponseEntity}, esse detalhe também foi omitido na representação para manter o diagrama mais conciso e focado na estrutura geral do fluxo de dados e responsabilidades.
+
 \section{Camada de Acesso a Dados}
 \label{sec-frameweb-dados}
 
@@ -87,9 +98,4 @@ Enquanto o \textsf{Spring Data JPA}, há os métodos personalizados que fazem:
 
 \vitor{Apresentar os modelos de navegação do FrameWeb.}
 
-adpoaskdpoasjkdpoasjdpoasjkdpoasjdposajdopasjdpoasdpoasdopasdpoasjdposajdpoasjdopj
-adpoaskdpoasjkdpoasjdpoasjkdpoasjdposajdopasjdpoasdpoasdopasdpoasjdposajdpoasjdopj
-adpoaskdpoasjkdpoasjdpoasjkdpoasjdposajdopasjdpoasdpoasdopasdpoasjdposajdpoasjdopj
-adpoaskdpoasjkdpoasjdpoasjkdpoasjdposajdopasjdpoasdpoasdopasdpoasjdposajdpoasjdopj
-adpoaskdpoasjkdpoasjdpoasjkdpoasjdposajdopasjdpoasdpoasdopasdpoasjdposajdpoasjdopj
-adpoaskdpoasjkdpoasjdpoasjkdpoasjdposajdopasjdpoasdpoasdopasdpoasjdposajdpoasjdopj
+

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.11.27)  24 MAY 2025 17:55
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.11.27)  25 MAY 2025 17:38
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1668,68 +1668,32 @@ File: figuras/domain.png Graphic file (type png)
 <use figuras/domain.png>
 Package pdftex.def Info: figuras/domain.png  used on input line 48.
 (pdftex.def)             Requested size: 364.00139pt x 233.05449pt.
-<figuras/persistence.png, id=75, 833.36343pt x 412.54124pt>
+<figuras/application.png, id=74, 1192.455pt x 467.49657pt>
+File: figuras/application.png Graphic file (type png)
+<use figuras/application.png>
+Package pdftex.def Info: figuras/application.png  used on input line 57.
+(pdftex.def)             Requested size: 364.00139pt x 142.70393pt.
+
+
+[6 <./figuras/domain.png> <./figuras/application.png>]
+<figuras/persistence.png, id=87, 833.36343pt x 412.54124pt>
 File: figuras/persistence.png Graphic file (type png)
 <use figuras/persistence.png>
-Package pdftex.def Info: figuras/persistence.png  used on input line 64.
+Package pdftex.def Info: figuras/persistence.png  used on input line 75.
 (pdftex.def)             Requested size: 364.00139pt x 180.19049pt.
 
 
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-
-
-[6 <./figuras/domain.png>]
+[7 <./figuras/persistence.png>]
 Package hyperref Info: bookmark level for unknown todo defaults to 0 on input l
-ine 88.
-)
-Overfull \hbox (39.35837pt too wide) in paragraph at lines 90--299
-[]\T1/lmr/m/n/12 (-20) adpoaskdpoasjkdpoasjdpoasjkdpoasjdposajdopasjdpoasdpoasd
-opasdpoasjdposajdpoasjdopj
- []
-
-
-Overfull \hbox (2.3697pt too wide) in paragraph at lines 90--299
-\T1/lmr/m/n/12 (-20) ad-po-askd-po-asjkd-po-asjd-po-asjkd-po-asjd-po-saj-do-pas
-jd-po-asd-po-as-do-pasdpoasjdposajdpoasjdopj
- []
-
-
-Overfull \hbox (2.3697pt too wide) in paragraph at lines 90--299
-\T1/lmr/m/n/12 (-20) ad-po-askd-po-asjkd-po-asjd-po-asjkd-po-asjd-po-saj-do-pas
-jd-po-asd-po-as-do-pasdpoasjdposajdpoasjdopj
- []
-
-
-Overfull \hbox (2.3697pt too wide) in paragraph at lines 90--299
-\T1/lmr/m/n/12 (-20) ad-po-askd-po-asjkd-po-asjd-po-asjkd-po-asjd-po-saj-do-pas
-jd-po-asd-po-as-do-pasdpoasjdposajdpoasjdopj
- []
-
-
-Overfull \hbox (2.3697pt too wide) in paragraph at lines 90--299
-\T1/lmr/m/n/12 (-20) ad-po-askd-po-asjkd-po-asjd-po-asjkd-po-asjd-po-saj-do-pas
-jd-po-asd-po-as-do-pasdpoasjdposajdpoasjdopj
- []
-
-
-Overfull \hbox (2.3697pt too wide) in paragraph at lines 90--299
-\T1/lmr/m/n/12 (-20) ad-po-askd-po-asjkd-po-asjd-po-asjkd-po-asjd-po-saj-do-pas
-jd-po-asd-po-as-do-pasdpoasjdposajdpoasjdopj
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 90--299
-
- []
-
-(./projeto-EnglishForAllTime.bbl (./projeto-EnglishForAllTime.brf)
+ine 99.
+) (./projeto-EnglishForAllTime.bbl
+(./projeto-EnglishForAllTime.brf)
 \tf@brf=\write6
 \openout6 = `projeto-EnglishForAllTime.brf'.
 
 
 
-[7 <./figuras/persistence.png>]
+[8]
 bibitemlist
 )
 No file projeto-EnglishForAllTime.ind.
@@ -1739,7 +1703,7 @@ See the caption package documentation for explanation.
 
 
 
-[8
+[9
 
 ] 
 enddocument/afterlastpage: lastpage setting LastPage.
@@ -1757,11 +1721,11 @@ ed.
 (rerunfilecheck)             Checksum: 8F3238474DE7B2F6B6DF0713E1EE088C;56.
  ) 
 Here is how much of TeX's memory you used:
- 35872 strings out of 473330
- 640888 string characters out of 5723877
- 1109547 words of memory out of 5000000
- 58145 multiletter control sequences out of 15000+600000
- 642720 words of font info for 175 fonts, out of 8000000 for 9000
+ 35888 strings out of 473330
+ 641197 string characters out of 5723877
+ 1109625 words of memory out of 5000000
+ 58153 multiletter control sequences out of 15000+600000
+ 643018 words of font info for 178 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  99i,12n,117p,1022b,996s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2024/texmf-dist/fonts/type1/public/lm/lmbx10.pfb><c:/texlive/2024
@@ -1774,10 +1738,10 @@ m/lmri12.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/lm/lmss12.pfb><c:/t
 exlive/2024/texmf-dist/fonts/type1/public/lm/lmss17.pfb><c:/texlive/2024/texmf-
 dist/fonts/type1/public/lm/lmssbx10.pfb><c:/texlive/2024/texmf-dist/fonts/type1
 /public/lm/lmtk10.pfb>
-Output written on projeto-EnglishForAllTime.pdf (9 pages, 807796 bytes).
+Output written on projeto-EnglishForAllTime.pdf (10 pages, 936183 bytes).
 PDF statistics:
- 206 PDF objects out of 1000 (max. 8388607)
- 161 compressed objects within 2 object streams
- 35 named destinations out of 1000 (max. 500000)
- 47745 words of extra memory for PDF output out of 51595 (max. 10000000)
+ 217 PDF objects out of 1000 (max. 8388607)
+ 169 compressed objects within 2 object streams
+ 37 named destinations out of 1000 (max. 500000)
+ 47750 words of extra memory for PDF output out of 51595 (max. 10000000)
 
