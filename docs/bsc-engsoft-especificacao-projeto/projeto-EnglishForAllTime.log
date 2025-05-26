@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.11.27)  26 MAY 2025 14:19
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.11.27)  26 MAY 2025 17:10
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1564,11 +1564,8 @@ l.276 \newpage
                [1
 
 
-] (./capitulos/ch1-introducao.tex
-
-LaTeX Warning: Reference `sec-rnfs' on page 2 undefined on input line 17.
-
-) (./capitulos/ch2-plataforma.tex
+] (./capitulos/ch1-introducao.tex)
+(./capitulos/ch2-plataforma.tex
 Overfull \hbox (0.96431pt too wide) in paragraph at lines 25--25
 []|\T1/lmr/bx/n/10 (-20) Tecnologia| 
  []
@@ -1630,11 +1627,11 @@ Overfull \hbox (0.44151pt too wide) in alignment at lines 83--104
  []
 
 ) (./capitulos/ch4-arquitetura.tex
-<figuras/architecture_novo.png, id=40, 807.7678pt x 532.99126pt>
+<figuras/architecture_novo.png, id=40, 809.27344pt x 535.2497pt>
 File: figuras/architecture_novo.png Graphic file (type png)
 <use figuras/architecture_novo.png>
 Package pdftex.def Info: figuras/architecture_novo.png  used on input line 10.
-(pdftex.def)             Requested size: 364.00139pt x 240.17729pt.
+(pdftex.def)             Requested size: 364.00139pt x 240.75395pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
@@ -1663,40 +1660,38 @@ Package microtype Info: Loading generic protrusion settings for font family
 
 [4{c:/texlive/2024/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc} <./figuras/archite
 cture_novo.png>]) (./capitulos/ch5-frameweb.tex [5]
-<figuras/domain.png, id=73, 826.58812pt x 529.22719pt>
+<figuras/domain.png, id=73, 742.27313pt x 478.03593pt>
 File: figuras/domain.png Graphic file (type png)
 <use figuras/domain.png>
 Package pdftex.def Info: figuras/domain.png  used on input line 48.
-(pdftex.def)             Requested size: 364.00139pt x 233.05449pt.
-<figuras/application.png, id=74, 1192.455pt x 467.49657pt>
+(pdftex.def)             Requested size: 364.00139pt x 234.4293pt.
+<figuras/application.png, id=74, 892.08281pt x 347.79938pt>
 File: figuras/application.png Graphic file (type png)
 <use figuras/application.png>
 Package pdftex.def Info: figuras/application.png  used on input line 57.
-(pdftex.def)             Requested size: 364.00139pt x 142.70393pt.
+(pdftex.def)             Requested size: 364.00139pt x 141.91406pt.
 
 
 [6 <./figuras/domain.png> <./figuras/application.png>]
-<figuras/persistence.png, id=87, 833.36343pt x 412.54124pt>
+<figuras/persistence.png, id=87, 837.88031pt x 414.79968pt>
 File: figuras/persistence.png Graphic file (type png)
 <use figuras/persistence.png>
 Package pdftex.def Info: figuras/persistence.png  used on input line 75.
-(pdftex.def)             Requested size: 364.00139pt x 180.19049pt.
+(pdftex.def)             Requested size: 364.00139pt x 180.20222pt.
 
 
 [7 <./figuras/persistence.png>]
-Package hyperref Info: bookmark level for unknown todo defaults to 0 on input l
-ine 99.
-<figuras/visualizarCursos.png, id=95, 792.71156pt x 347.79938pt>
+<figuras/visualizarCursos.png, id=95, 794.2172pt x 347.04657pt>
 File: figuras/visualizarCursos.png Graphic file (type png)
 <use figuras/visualizarCursos.png>
 Package pdftex.def Info: figuras/visualizarCursos.png  used on input line 103.
-(pdftex.def)             Requested size: 364.00139pt x 159.70837pt.
-<figuras/visualizarModulosCurso.png, id=97, 810.02625pt x 310.15875pt>
+(pdftex.def)             Requested size: 364.00139pt x 159.06085pt.
+<figuras/visualizarModulosCurso.png, id=97, 804.75656pt x 292.09125pt>
 File: figuras/visualizarModulosCurso.png Graphic file (type png)
 <use figuras/visualizarModulosCurso.png>
 Package pdftex.def Info: figuras/visualizarModulosCurso.png  used on input line
  116.
-(pdftex.def)             Requested size: 364.00139pt x 139.3761pt.
+(pdftex.def)             Requested size: 364.00139pt x 132.11284pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
@@ -1704,12 +1699,12 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 
 
 [8 <./figuras/visualizarCursos.png>]
-<figuras/marcarLicaoConcluida.png, id=108, 878.53218pt x 340.27126pt>
+<figuras/marcarLicaoConcluida.png, id=107, 875.52094pt x 338.01282pt>
 File: figuras/marcarLicaoConcluida.png Graphic file (type png)
 <use figuras/marcarLicaoConcluida.png>
 Package pdftex.def Info: figuras/marcarLicaoConcluida.png  used on input line 1
 29.
-(pdftex.def)             Requested size: 364.00139pt x 140.98666pt.
+(pdftex.def)             Requested size: 364.00139pt x 140.53058pt.
 ) (./projeto-EnglishForAllTime.bbl
 (./projeto-EnglishForAllTime.brf)
 \tf@brf=\write6
@@ -1736,22 +1731,18 @@ enddocument/afterlastpage: lastpage setting LastPage.
 LaTeX2e <2024-11-01> patch level 1
 L3 programming layer <2020/03/25>
  ***********
-
-
-LaTeX Warning: There were undefined references.
-
 Package rerunfilecheck Info: File `projeto-EnglishForAllTime.brf' has not chang
 ed.
 (rerunfilecheck)             Checksum: 8F3238474DE7B2F6B6DF0713E1EE088C;56.
  ) 
 Here is how much of TeX's memory you used:
- 35942 strings out of 473330
- 642415 string characters out of 5723877
- 1109878 words of memory out of 5000000
- 58177 multiletter control sequences out of 15000+600000
- 644376 words of font info for 191 fonts, out of 8000000 for 9000
+ 35880 strings out of 473330
+ 640734 string characters out of 5723877
+ 1107829 words of memory out of 5000000
+ 58108 multiletter control sequences out of 15000+600000
+ 644790 words of font info for 195 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 99i,12n,117p,1022b,996s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 99i,13n,117p,1022b,834s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2024/texmf-dist/fonts/type1/public/lm/lmbx10.pfb><c:/texlive/2024
 /texmf-dist/fonts/type1/public/lm/lmbx12.pfb><c:/texlive/2024/texmf-dist/fonts/
 type1/public/lm/lmbxi10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/lm/l
@@ -1762,10 +1753,10 @@ m/lmri12.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/lm/lmss12.pfb><c:/t
 exlive/2024/texmf-dist/fonts/type1/public/lm/lmss17.pfb><c:/texlive/2024/texmf-
 dist/fonts/type1/public/lm/lmssbx10.pfb><c:/texlive/2024/texmf-dist/fonts/type1
 /public/lm/lmtk10.pfb>
-Output written on projeto-EnglishForAllTime.pdf (11 pages, 1090625 bytes).
+Output written on projeto-EnglishForAllTime.pdf (11 pages, 1034102 bytes).
 PDF statistics:
  232 PDF objects out of 1000 (max. 8388607)
  177 compressed objects within 2 object streams
- 41 named destinations out of 1000 (max. 500000)
+ 40 named destinations out of 1000 (max. 500000)
  47765 words of extra memory for PDF output out of 51595 (max. 10000000)
 

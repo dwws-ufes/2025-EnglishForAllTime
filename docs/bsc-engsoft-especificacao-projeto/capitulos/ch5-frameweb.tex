@@ -96,7 +96,7 @@ Enquanto o \textsf{Spring Data JPA}, há os métodos personalizados que fazem:
 \section{Camada de Apresentação}
 \label{sec-frameweb-apresentacao}
 
-\vitor{Apresentar os modelos de navegação do FrameWeb.}
+%\vitor{Apresentar os modelos de navegação do FrameWeb.}
 
 \begin{figure}[h]
 	\centering
@@ -130,3 +130,9 @@ O \textsf{service} então delega a consulta à camada de persistência, onde o \
 	\caption{Modelo de Navegação (\textsf{Marcar Lição como Concluída})}
 	\label{marcarLicaoConcluida}
 \end{figure}
+
+A imagem~\ref{marcarLicaoConcluida} representa a arquitetura da funcionalidade de consulta das aulas pertencentes a um módulo em uma aplicação web estruturada segundo o padrão \textsf{FrameWeb}.
+
+A operação tem início na camada de controle, com o método \textsf{getLessonsByModule(moduleId)} do \textsf{LessonController}, que recebe a requisição proveniente da interface de usuário, mais especificamente da página \textsf{LessonDetailView}, e a encaminha para a camada de aplicação. Nessa camada, o \textsf{LessonServiceBean}, que implementa a interface \textsf{LessonService}, executa a lógica de negócio necessária para recuperar as aulas vinculadas ao módulo identificado pelo parâmetro \textsf{moduleId}, assegurando o correto funcionamento conforme as regras do domínio.
+
+Em seguida, o \textsf{service} delega a operação à camada de persistência, onde o \textsf{LessonJPADAO}, implementação da interface \textsf{LessonDAO}, executa o método \textsf{retrieveAllByModule}, realizando a consulta no banco de dados e retornando uma lista de entidades \textsf{Lesson}.
