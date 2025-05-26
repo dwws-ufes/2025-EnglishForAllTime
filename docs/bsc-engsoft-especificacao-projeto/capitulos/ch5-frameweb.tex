@@ -98,4 +98,35 @@ Enquanto o \textsf{Spring Data JPA}, há os métodos personalizados que fazem:
 
 \vitor{Apresentar os modelos de navegação do FrameWeb.}
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.8\textwidth]{figuras/visualizarCursos.png}
+	\caption{Modelo de Navegação (\textsf{Visualizar Cursos})}
+	\label{visualizarCursos}
+\end{figure}
 
+A imagem~\ref{visualizarCursos} representa a arquitetura da funcionalidade de consulta de cursos disponíveis em uma aplicação web estruturada segundo o padrão \textsf{FrameWeb}.
+
+A operação é iniciada na camada de controle, com o método \textsf{retrieveAllByDifficulty(difficulty)} do \textsf{CourseController}, responsável por receber a requisição da interface de usuário, mais especificamente da página \textsf{CourseListView}, e encaminhá-la para a camada de aplicação. Nessa camada, o \textsf{CourseServiceBean}, implementando a interface \textsf{CourseService}, executa a lógica de negócio associada à recuperação de cursos conforme o nível de dificuldade selecionado, garantindo a aplicação das regras do domínio.
+
+O \textsf{service} então delega a consulta à camada de persistência, onde o \textsf{CourseJPADAO}, implementação da interface \textsf{CourseDAO}, executa o método \textsf{retrieveAllByDifficulty}, realizando a busca no banco de dados e retornando uma lista de entidades \textsf{Course}. Além disso, a arquitetura contempla também o método \textsf{getAllCourses}, que possibilita a listagem completa dos cursos sem filtragem, percorrendo a mesma estrutura de camadas.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.8\textwidth]{figuras/visualizarModulosCurso.png}
+	\caption{Modelo de Navegação (\textsf{Visualizar Módulos de um Curso})}
+	\label{visualizarModulosCurso}
+\end{figure}
+
+A imagem~\ref{visualizarModulosCurso} representa a arquitetura da funcionalidade de consulta dos módulos de um curso em uma aplicação web estruturada segundo o padrão \textsf{FrameWeb}.
+
+A operação é iniciada na camada de controle, com o método \textsf{getModulesByCourse(courseId)} do \textsf{ModuleController}, responsável por receber a requisição da interface de usuário, mais especificamente da página \textsf{ModuleListView}, e encaminhá-la para a camada de aplicação. Nessa camada, o \textsf{ModuleServiceBean}, implementando a interface \textsf{ModuleService}, executa a lógica de negócio associada à recuperação dos módulos pertencentes ao curso identificado pelo parâmetro \textsf{courseId}, garantindo a aplicação das regras do domínio.
+
+O \textsf{service} então delega a consulta à camada de persistência, onde o \textsf{ModuleJPADAO}, implementação da interface \textsf{ModuleDAO}, executa o método \textsf{retrieveAllByCourse}, realizando a busca no banco de dados e retornando uma lista de entidades \textsf{Module}.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.8\textwidth]{figuras/marcarLicaoConcluida.png}
+	\caption{Modelo de Navegação (\textsf{Marcar Lição como Concluída})}
+	\label{marcarLicaoConcluida}
+\end{figure}
