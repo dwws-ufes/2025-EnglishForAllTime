@@ -5,28 +5,37 @@ import {
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import axios from "axios";
+import api from "../services/api";
+import { useAuth } from '../contexts/AuthContext';
+
+
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [, setError] = useState('');
   const navigate = useNavigate();
+  const { signIn } = useAuth();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setError('');
 
     try {
-      await axios.post('/login', new URLSearchParams({
-        username: email, // Spring Security espera "username", mesmo sendo email
+      const response = await api.post('/auth/login', {
+        login: email,
         password: password
-      }), {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        withCredentials: true // para manter a sessão
       });
 
+      // Assumindo que o backend retorna { token: 'jwt-token' }
+      const { token } = response.data;
+      await signIn(token);
       navigate('/home');
-    } catch (error) {
-      alert("Login falhou");
+    } catch (err) {
+      setError(
+        err.response?.data?.message || 
+        'Ocorreu um erro ao fazer login. Tente novamente.'
+      );
     }
   };
 
