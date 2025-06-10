@@ -1,19 +1,16 @@
 package com.backend.domain;
 
-import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
 
-@Entity
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Table(name = "difficulties")
-public class Difficulty {
+@Getter
+public enum Difficulty {
+    BEGINNER("beginner"),
+    INTERMEDIATE("intermediate"),
+    ADVANCED("advanced");
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private final String level;
 
-    @Column(nullable = false)
-    private String level;
+    Difficulty(String level) {
+        this.level = level;
+    }
 }

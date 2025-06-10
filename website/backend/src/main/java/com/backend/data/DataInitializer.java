@@ -29,6 +29,7 @@ public class DataInitializer implements CommandLineRunner {
             admin.setLogin("admin@englishforalltime.com");
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setRole(UserRole.ADMIN);
+            admin.setCreatedAt(java.time.LocalDateTime.now());
 
             userRepository.save(admin);
 
