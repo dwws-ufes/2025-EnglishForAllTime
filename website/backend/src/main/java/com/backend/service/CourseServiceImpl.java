@@ -22,11 +22,15 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public Course findById(Long id) {
         return courseRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Course not found"));
+                .orElseThrow(() -> new NoSuchElementException("Curso não encontrado"));
     }
 
     @Override
     public Course save(Course course) {
+        // Garantir que createdAt seja sempre preenchido
+        if (course.getCreatedAt() == null) {
+            course.setCreatedAt(java.time.LocalDateTime.now());
+        }
         return courseRepository.save(course);
     }
 
@@ -34,7 +38,11 @@ public class CourseServiceImpl implements CourseService {
     public Course update(Long id, Course course) {
         Course existing = findById(id);
         existing.setTitle(course.getTitle());
+        existing.setDescription(course.getDescription());
         existing.setDifficulty(course.getDifficulty());
+        existing.setThumbnailUrl(course.getThumbnailUrl());
+        existing.setCreatedAt(course.getCreatedAt());
+        existing.setCreatedBy(course.getCreatedBy());
         return courseRepository.save(existing);
     }
 
