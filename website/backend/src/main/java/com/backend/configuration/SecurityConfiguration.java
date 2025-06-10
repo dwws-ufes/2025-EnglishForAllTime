@@ -41,6 +41,8 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/auth/register").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/auth/me").authenticated()
                         .requestMatchers(HttpMethod.POST, "/auth/logout").authenticated()
+                        // LIBERA TODOS OS ENDPOINTS DE COURSE PARA TESTES
+                        .requestMatchers("/courses/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

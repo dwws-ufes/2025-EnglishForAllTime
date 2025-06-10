@@ -47,6 +47,7 @@ public class AuthenticationService {
         }
 
         User newUser = new User(data.login(), passwordEncoder.encode(data.password()), data.role());
+        newUser.setCreatedAt(java.time.LocalDateTime.now());
         this.userRepository.save(newUser);
     }
 
