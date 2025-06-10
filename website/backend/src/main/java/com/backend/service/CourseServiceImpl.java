@@ -41,7 +41,6 @@ public class CourseServiceImpl implements CourseService {
         existing.setDescription(course.getDescription());
         existing.setDifficulty(course.getDifficulty());
         existing.setThumbnailUrl(course.getThumbnailUrl());
-        existing.setCreatedAt(course.getCreatedAt());
         existing.setCreatedBy(course.getCreatedBy());
         return courseRepository.save(existing);
     }
