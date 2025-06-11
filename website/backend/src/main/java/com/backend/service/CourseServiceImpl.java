@@ -49,4 +49,11 @@ public class CourseServiceImpl implements CourseService {
     public void delete(Long id) {
         courseRepository.deleteById(id);
     }
+
+    @Override
+    public List<Course> findByDifficulty(String difficulty) {
+        return courseRepository.findByDifficulty(
+                com.backend.domain.Difficulty.valueOf(difficulty.toUpperCase())
+        );
+    }
 }

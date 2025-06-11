@@ -43,4 +43,9 @@ public class CourseController {
         courseService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<Course>> getCoursesByDifficulty(@RequestParam("difficulty") String difficulty) {
+        return ResponseEntity.ok(courseService.findByDifficulty(difficulty));
+    }
 }
