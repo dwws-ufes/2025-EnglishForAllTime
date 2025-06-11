@@ -1,6 +1,7 @@
 package com.backend.service;
 
 import com.backend.domain.Course;
+import com.backend.domain.Difficulty;
 import com.backend.persistence.CourseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -48,5 +49,17 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public void delete(Long id) {
         courseRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Course> findByDifficulty(String difficulty) {
+        try {
+            return courseRepository.findByDifficulty(
+                    com.backend.domain.Difficulty.valueOf(difficulty.toUpperCase())
+            );
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid difficulty level: " + difficulty + ". Valid values are: "
+                    + Difficulty.BEGINNER + ", " + Difficulty.INTERMEDIATE + ", " + Difficulty.ADVANCED);
+        }
     }
 }

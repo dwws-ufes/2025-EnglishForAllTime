@@ -9,4 +9,5 @@ public interface CourseService {
     Course save(Course course);
     Course update(Long id, Course course);
     void delete(Long id);
+    List<Course> findByDifficulty(String difficulty);
 }
