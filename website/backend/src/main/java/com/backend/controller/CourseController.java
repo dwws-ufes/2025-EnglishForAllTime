@@ -45,7 +45,7 @@ public class CourseController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<Course>> getCoursesByDifficulty(@RequestParam("difficulty") String difficulty) {
+    public ResponseEntity<List<Course>> getCoursesByDifficulty(@RequestParam Difficulty difficulty) {
         return ResponseEntity.ok(courseService.findByDifficulty(difficulty));
     }
 }
