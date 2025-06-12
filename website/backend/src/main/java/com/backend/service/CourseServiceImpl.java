@@ -52,10 +52,10 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public List<Course> findByDifficulty(String difficulty) {
+    public List<Course> findByDifficulty(Difficulty difficulty) {
         try {
             return courseRepository.findByDifficulty(
-                    com.backend.domain.Difficulty.valueOf(difficulty.toUpperCase())
+                    com.backend.domain.Difficulty.valueOf(difficulty.name().toUpperCase())
             );
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid difficulty level: " + difficulty + ". Valid values are: "
