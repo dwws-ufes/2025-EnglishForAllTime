@@ -1,6 +1,7 @@
 package com.backend.controller;
 
 import com.backend.domain.Course;
+import com.backend.domain.Difficulty;
 import com.backend.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

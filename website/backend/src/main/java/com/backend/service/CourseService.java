@@ -1,6 +1,8 @@
 package com.backend.service;
 
 import com.backend.domain.Course;
+import com.backend.domain.Difficulty;
+
 import java.util.List;
 
 public interface CourseService {
@@ -9,5 +11,5 @@ public interface CourseService {
     Course save(Course course);
     Course update(Long id, Course course);
     void delete(Long id);
-    List<Course> findByDifficulty(String difficulty);
+    List<Course> findByDifficulty(Difficulty difficulty);
 }
