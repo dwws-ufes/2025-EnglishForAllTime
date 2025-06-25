@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -7,10 +7,6 @@ import {
   TextField,
   Button,
   Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Alert,
   Grid,
   IconButton,
@@ -25,8 +21,7 @@ import {
   Avatar,
   Stepper,
   Step,
-  StepLabel,
-  StepContent
+  StepLabel
 } from '@mui/material';
 import { 
   Save as SaveIcon, 
@@ -53,7 +48,8 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
   const [successMessage, setSuccessMessage] = useState('');
   const [activeStep, setActiveStep] = useState(0);
 
-  const difficulties = [
+  // Mover para um useMemo ou constante para evitar re-criação
+  const difficulties = useMemo(() => [
     { 
       value: 'BEGINNER', 
       label: 'Iniciante',
@@ -72,9 +68,9 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
       description: 'Para alunos com bom domínio do idioma',
       color: '#f44336'
     }
-  ];
+  ], []);
 
-  const steps = [
+  const steps = useMemo(() => [
     {
       label: 'Informações Básicas',
       icon: <SchoolIcon />,
@@ -90,7 +86,7 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
       icon: <PreviewIcon />,
       description: 'Confirme os dados antes de criar'
     }
-  ];
+  ], []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -142,7 +138,8 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
     }
   };
 
-  const getCompletionPercentage = () => {
+  // Usar useMemo para evitar recálculo constante
+  const completionPercentage = useMemo(() => {
     let completed = 0;
     const totalFields = 4;
     
@@ -152,7 +149,7 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
     if (formData.thumbnailUrl.trim()) completed++;
     
     return (completed / totalFields) * 100;
-  };
+  }, [formData]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -236,6 +233,11 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
     setActiveStep(0);
   };
 
+  // Função para criar o card de dificuldade
+  const handleDifficultySelect = (value) => {
+    handleChange({ target: { name: 'difficulty', value } });
+  };
+
   const renderStepContent = (step) => {
     switch (step) {
       case 0:
@@ -275,12 +277,7 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
                 value={formData.description}
                 onChange={handleChange}
                 error={!!errors.description}
-                helperText={
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                    <span>{errors.description || 'Descreva o que os alunos aprenderão'}</span>
-                    <span>{formData.description.length}/1000</span>
-                  </Box>
-                }
+                helperText={errors.description || 'Descreva o que os alunos aprenderão'}
                 fullWidth
                 multiline
                 rows={4}
@@ -290,6 +287,9 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
                   startAdornment: <DescriptionIcon sx={{ mr: 1, color: 'action.active', alignSelf: 'flex-start', mt: 1 }} />
                 }}
               />
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'right', mt: 1 }}>
+                {formData.description.length}/1000 caracteres
+              </Typography>
             </Grid>
           </Grid>
         );
@@ -329,7 +329,7 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
                         boxShadow: 2
                       }
                     }}
-                    onClick={() => handleChange({ target: { name: 'difficulty', value: option.value } })}
+                    onClick={() => handleDifficultySelect(option.value)}
                   >
                     <CardContent sx={{ textAlign: 'center', py: 2 }}>
                       <Avatar 
@@ -421,7 +421,7 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
                       <Typography variant="subtitle2" color="primary" gutterBottom>
                         Nível de Dificuldade
                       </Typography>
-                      {formData.difficulty && (
+                      {formData.difficulty ? (
                         <Chip
                           label={difficulties.find(d => d.value === formData.difficulty)?.label}
                           sx={{
@@ -429,6 +429,10 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
                             color: 'white'
                           }}
                         />
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">
+                          Não selecionado
+                        </Typography>
                       )}
                     </Box>
 
@@ -506,12 +510,12 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
             Progresso do formulário
           </Typography>
           <Typography variant="caption" color="primary" fontWeight="bold">
-            {Math.round(getCompletionPercentage())}% completo
+            {Math.round(completionPercentage)}% completo
           </Typography>
         </Box>
         <LinearProgress 
           variant="determinate" 
-          value={getCompletionPercentage()} 
+          value={completionPercentage} 
           sx={{ height: 6, borderRadius: 3 }}
         />
       </Box>
