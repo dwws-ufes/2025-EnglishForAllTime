@@ -2,10 +2,12 @@ package com.backend.controller;
 
 import com.backend.domain.Course;
 import com.backend.domain.Difficulty;
+import com.backend.domain.User;
 import com.backend.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,13 +30,30 @@ public class CourseController {
     }
 
     @PostMapping
-    public ResponseEntity<Course> createCourse(@RequestBody Course course) {
+    public ResponseEntity<Course> createCourse(
+            @RequestBody Course course, 
+            Authentication authentication) {
+        
+        // Obter o usuário autenticado
+        User authenticatedUser = (User) authentication.getPrincipal();
+        
+        // Definir o criador do curso
+        course.setCreatedBy(authenticatedUser);
+        
+        // Criar o curso
         Course created = courseService.save(course);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Course> updateCourse(@PathVariable Long id, @RequestBody Course course) {
+    public ResponseEntity<Course> updateCourse(
+            @PathVariable Long id, 
+            @RequestBody Course course,
+            Authentication authentication) {
+        
+        // Obter o usuário autenticado para auditoria
+        User authenticatedUser = (User) authentication.getPrincipal();
+        
         Course updated = courseService.update(id, course);
         return ResponseEntity.ok(updated);
     }

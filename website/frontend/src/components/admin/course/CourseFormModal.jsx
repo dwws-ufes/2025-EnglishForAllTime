@@ -30,7 +30,8 @@ import {
   Preview as PreviewIcon,
   Help as HelpIcon
 } from '@mui/icons-material';
-import axios from 'axios';
+import { useAuth } from '../../../contexts/AuthContext';
+import api from '../../../services/api'; // Usar o serviço de API configurado
 
 const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
   const [formData, setFormData] = useState({
@@ -44,6 +45,9 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [activeTab, setActiveTab] = useState(0);
+
+  // Usar o hook de autenticação
+  const { token, user, isAuthenticated } = useAuth();
 
   const difficulties = [
     {
@@ -82,55 +86,6 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
     }
   }, [errors]);
 
-  const validateForm = useCallback(() => {
-    const newErrors = {};
-
-    if (!formData.title.trim()) {
-      newErrors.title = 'Título é obrigatório';
-    } else if (formData.title.length < 3) {
-      newErrors.title = 'Título deve ter pelo menos 3 caracteres';
-    }
-
-    if (!formData.difficulty) {
-      newErrors.difficulty = 'Nível de dificuldade é obrigatório';
-    }
-
-    if (formData.description && formData.description.length > 1000) {
-      newErrors.description = 'Descrição deve ter no máximo 1000 caracteres';
-    }
-
-    if (formData.thumbnailUrl && !isValidUrl(formData.thumbnailUrl)) {
-      newErrors.thumbnailUrl = 'URL da imagem deve ser válida';
-    }
-
-    return Object.keys(newErrors).length === 0;
-  }, [formData]);
-
-  const validateAndSetErrors = useCallback(() => {
-    const newErrors = {};
-
-    if (!formData.title.trim()) {
-      newErrors.title = 'Título é obrigatório';
-    } else if (formData.title.length < 3) {
-      newErrors.title = 'Título deve ter pelo menos 3 caracteres';
-    }
-
-    if (!formData.difficulty) {
-      newErrors.difficulty = 'Nível de dificuldade é obrigatório';
-    }
-
-    if (formData.description && formData.description.length > 1000) {
-      newErrors.description = 'Descrição deve ter no máximo 1000 caracteres';
-    }
-
-    if (formData.thumbnailUrl && !isValidUrl(formData.thumbnailUrl)) {
-      newErrors.thumbnailUrl = 'URL da imagem deve ser válida';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }, [formData]);
-
   const isValidUrl = (string) => {
     try {
       new URL(string);
@@ -139,6 +94,35 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
       return false;
     }
   };
+
+  const validateForm = useCallback(() => {
+    const newErrors = {};
+
+    // Validação do título
+    if (!formData.title.trim()) {
+      newErrors.title = 'Título é obrigatório';
+    } else if (formData.title.length < 3) {
+      newErrors.title = 'Título deve ter pelo menos 3 caracteres';
+    }
+
+    // Validação da dificuldade
+    if (!formData.difficulty) {
+      newErrors.difficulty = 'Nível de dificuldade é obrigatório';
+    }
+
+    // Validação da descrição (opcional, mas com limite)
+    if (formData.description && formData.description.length > 1000) {
+      newErrors.description = 'Descrição deve ter no máximo 1000 caracteres';
+    }
+
+    // Validação da URL da imagem (opcional, mas deve ser válida se fornecida)
+    if (formData.thumbnailUrl && formData.thumbnailUrl.trim() && !isValidUrl(formData.thumbnailUrl)) {
+      newErrors.thumbnailUrl = 'URL da imagem deve ser válida';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, [formData]);
 
   const getCompletionPercentage = useCallback(() => {
     let completed = 0;
@@ -154,56 +138,106 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    
+    console.log('🚀 Iniciando criação do curso...');
+    console.log('📝 Dados do formulário:', formData);
+    console.log('👤 Usuário:', user);
+    console.log('🔐 Autenticado:', isAuthenticated);
 
-    if (!validateAndSetErrors()) {
+    // Validar antes de enviar
+    if (!validateForm()) {
+      console.log('❌ Validação falhou:', errors);
+      setActiveTab(0); // Voltar para a primeira aba se houver erros
+      return;
+    }
+
+    // Verificar se está autenticado
+    if (!isAuthenticated || !token) {
+      console.log('❌ Usuário não autenticado');
+      setErrors({ submit: 'Você precisa estar logado para criar um curso.' });
       return;
     }
 
     setLoading(true);
     setSuccessMessage('');
+    setErrors({}); // Limpar erros anteriores
 
     try {
-      const response = await axios.post('http://localhost:8080/api/courses', formData, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      // Preparar os dados para envio
+      const courseData = {
+        title: formData.title.trim(),
+        description: formData.description.trim() || null,
+        difficulty: formData.difficulty,
+        thumbnailUrl: formData.thumbnailUrl.trim() || null
+      };
 
+      console.log('📤 Enviando dados para o backend:', courseData);
+      
+      // Verificar o token no localStorage para debug
+      const storedToken = localStorage.getItem('@EnglishForAllTime:token');
+      console.log('🔑 Token do context:', token ? `${token.substring(0, 20)}...` : 'Nenhum');
+      console.log('🔑 Token do localStorage:', storedToken ? `${storedToken.substring(0, 20)}...` : 'Nenhum');
+
+      // Usar o serviço de API que já está configurado com interceptors
+      const response = await api.post('/courses', courseData);
+
+      console.log('✅ Curso criado com sucesso:', response.data);
+      
       setSuccessMessage('Curso criado com sucesso!');
 
-      // Resetar formulário
-      setFormData({
-        title: '',
-        description: '',
-        difficulty: '',
-        thumbnailUrl: ''
-      });
-      setActiveTab(0);
-
+      // Chamar callback com os dados do curso criado
       if (onCourseCreated) {
         onCourseCreated(response.data);
       }
 
+      // Resetar formulário após sucesso
       setTimeout(() => {
-        onClose();
+        setFormData({
+          title: '',
+          description: '',
+          difficulty: '',
+          thumbnailUrl: ''
+        });
+        setActiveTab(0);
         setSuccessMessage('');
+        onClose();
       }, 2000);
 
     } catch (error) {
-      console.error('Erro ao criar curso:', error);
-
-      if (error.response?.status === 400) {
-        setErrors({ submit: 'Dados inválidos. Verifique os campos e tente novamente.' });
-      } else if (error.response?.status === 401) {
-        setErrors({ submit: 'Você precisa estar logado para criar um curso.' });
-      } else if (error.response?.status === 403) {
-        setErrors({ submit: 'Você não tem permissão para criar cursos.' });
+      console.error('❌ Erro ao criar curso:', error);
+      
+      let errorMessage = 'Erro interno do servidor. Tente novamente mais tarde.';
+      
+      if (error.response) {
+        // Erro do servidor com resposta
+        console.log('📊 Status do erro:', error.response.status);
+        console.log('📄 Dados do erro:', error.response.data);
+        
+        switch (error.response.status) {
+          case 400:
+            errorMessage = 'Dados inválidos. Verifique os campos e tente novamente.';
+            if (error.response.data?.message) {
+              errorMessage = error.response.data.message;
+            }
+            break;
+          case 401:
+            errorMessage = 'Sua sessão expirou. Faça login novamente.';
+            // Redirecionar para login se necessário
+            break;
+          case 403:
+            errorMessage = 'Você não tem permissão para criar cursos. Verifique se está logado como administrador.';
+            break;
+          case 409:
+            errorMessage = 'Já existe um curso com este título.';
+            break;
+          default:
+            errorMessage = `Erro do servidor (${error.response.status}). Tente novamente mais tarde.`;
+        }
       } else if (error.code === 'ERR_NETWORK') {
-        setErrors({ submit: 'Erro de conexão. Verifique se o servidor está rodando.' });
-      } else {
-        setErrors({ submit: 'Erro interno do servidor. Tente novamente mais tarde.' });
+        errorMessage = 'Erro de conexão. Verifique se o servidor está rodando na porta 8080.';
       }
+      
+      setErrors({ submit: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -453,6 +487,21 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
           </CardContent>
         </Card>
       </Grid>
+
+      {/* Debug info - mostrar status de autenticação */}
+      <Grid item xs={12}>
+        <Alert severity={isAuthenticated ? "success" : "warning"}>
+          {isAuthenticated ? (
+            <Typography>
+              ✅ <strong>Autenticado como:</strong> {user?.email || 'Usuário'}
+            </Typography>
+          ) : (
+            <Typography>
+              ⚠️ <strong>Não autenticado.</strong> Você precisa estar logado para criar cursos.
+            </Typography>
+          )}
+        </Alert>
+      </Grid>
     </Grid>
   );
 
@@ -480,6 +529,16 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
       default:
         return false;
     }
+  };
+
+  // Verificar se o formulário está válido para habilitar o botão
+  const isFormValid = () => {
+    return formData.title.trim() && 
+           formData.title.length >= 3 && 
+           formData.difficulty &&
+           (!formData.thumbnailUrl || isValidUrl(formData.thumbnailUrl)) &&
+           formData.description.length <= 1000 &&
+           isAuthenticated; // Usar isAuthenticated ao invés de token
   };
 
   return (
@@ -604,13 +663,20 @@ const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
               Próximo
             </Button>
           ) : (
-              <Button
-                  onClick={handleSubmit}
-                  disabled={loading || !validateForm()}
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  size="large"
-              >
+            <Button
+              onClick={handleSubmit}
+              disabled={loading || !isFormValid()}
+              variant="contained"
+              startIcon={loading ? null : <SaveIcon />}
+              size="large"
+              sx={{
+                minWidth: 160,
+                bgcolor: loading ? 'action.disabled' : 'primary.main',
+                '&:hover': {
+                  bgcolor: loading ? 'action.disabled' : 'primary.dark'
+                }
+              }}
+            >
               {loading ? 'Criando Curso...' : 'Criar Curso'}
             </Button>
           )}

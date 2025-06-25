@@ -5,7 +5,6 @@ import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
 import Login from './pages/Login';
 import Home from './pages/Home';
-import CoursesPage from './pages/admin/CoursesPage.jsx';
 
 function App() {
   return (
@@ -28,7 +27,7 @@ function App() {
             path="/admin/courses"
             element={
               <AdminRoute>
-                <CoursesPage />
+
               </AdminRoute>
             }
           />
