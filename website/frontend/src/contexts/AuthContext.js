@@ -32,13 +32,25 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   }, []);
 
+  // Função para verificar se o usuário é admin
+  const isAdmin = useCallback(() => {
+    return user?.role === 'ADMIN';
+  }, [user]);
+
+  // Função para verificar se o usuário tem uma role específica
+  const hasRole = useCallback((role) => {
+    return user?.role === role;
+  }, [user]);
+
   return (
     <AuthContext.Provider value={{ 
       token, 
       user, 
       signIn, 
       signOut, 
-      isAuthenticated: !!token 
+      isAuthenticated: !!token,
+      isAdmin,
+      hasRole
     }}>
       {children}
     </AuthContext.Provider>

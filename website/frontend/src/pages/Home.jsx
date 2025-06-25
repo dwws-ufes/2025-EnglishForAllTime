@@ -28,7 +28,8 @@ import {
   Button,
   Fab,
   Snackbar,
-  Alert as MuiAlert
+  Alert as MuiAlert,
+  Chip
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -38,7 +39,8 @@ import {
   Logout as LogoutIcon,
   Settings as SettingsIcon,
   ChevronLeft as ChevronLeftIcon,
-  Add as AddIcon
+  Add as AddIcon,
+  AdminPanelSettings as AdminIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -68,9 +70,12 @@ function Home() {
   const [courseModalOpen, setCourseModalOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth(); // Adicionar isAdmin
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+
+  // Verificar se é admin
+  const userIsAdmin = isAdmin();
 
   // Substituir as duas funções handleDrawerOpen e handleDrawerClose por uma única função toggle
   const handleDrawerToggle = () => {
@@ -96,6 +101,11 @@ function Home() {
   };
 
   const handleOpenCourseModal = () => {
+    if (!userIsAdmin) {
+      setSnackbarMessage('Apenas administradores podem criar cursos.');
+      setSnackbarOpen(true);
+      return;
+    }
     setCourseModalOpen(true);
   };
 
@@ -127,6 +137,15 @@ function Home() {
     },
   ];
 
+  // Adicionar item de menu admin apenas para administradores
+  if (userIsAdmin) {
+    menuItems.push({
+      text: 'Administração',
+      icon: <AdminIcon />,
+      onClick: () => navigate('/admin')
+    });
+  }
+
   return (
     <ThemeProvider theme={darkTheme}>
       <Box sx={{ display: 'flex' }}>
@@ -139,13 +158,25 @@ function Home() {
               aria-label="abrir menu"
               onClick={handleDrawerToggle}
               edge="start"
-              sx={{ mr: 2 }} // Removi a condição que fazia o botão sumir
+              sx={{ mr: 2 }}
             >
               <MenuIcon />
             </IconButton>
             <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
               English For All Time
             </Typography>
+            
+            {/* Mostrar chip de ADMIN se for administrador */}
+            {userIsAdmin && (
+              <Chip
+                icon={<AdminIcon />}
+                label="ADMIN"
+                size="small"
+                color="secondary"
+                sx={{ mr: 2, fontWeight: 'bold' }}
+              />
+            )}
+            
             <IconButton 
               color="inherit" 
               onClick={handleProfileClick}
@@ -226,6 +257,14 @@ function Home() {
             <Typography variant="body2" color="text.secondary">
               {user?.email || 'Usuário'}
             </Typography>
+            {userIsAdmin && (
+              <Chip
+                label="ADMIN"
+                size="small"
+                color="secondary"
+                sx={{ ml: 1, fontSize: '0.7rem' }}
+              />
+            )}
           </MenuItem>
           <Divider />
           <MenuItem onClick={handleClose}>
@@ -269,12 +308,14 @@ function Home() {
           </DialogActions>
         </Dialog>
 
-        {/* Modal de Criação de Curso */}
-        <CourseFormModal
-          open={courseModalOpen}
-          onClose={handleCloseCourseModal}
-          onCourseCreated={handleCourseCreated}
-        />
+        {/* Modal de Criação de Curso - Renderizar apenas se for ADMIN */}
+        {userIsAdmin && (
+          <CourseFormModal
+            open={courseModalOpen}
+            onClose={handleCloseCourseModal}
+            onCourseCreated={handleCourseCreated}
+          />
+        )}
 
         {/* Snackbar para notificações */}
         <Snackbar
@@ -285,7 +326,7 @@ function Home() {
         >
           <MuiAlert 
             onClose={handleCloseSnackbar} 
-            severity="success" 
+            severity={snackbarMessage.includes('Apenas') ? "warning" : "success"}
             sx={{ width: '100%' }}
           >
             {snackbarMessage}
@@ -314,87 +355,104 @@ function Home() {
                       Bem-vindo(a), {user?.name || 'Professor(a)'}!
                     </Typography>
                     <Typography variant="subtitle1">
-                      Continue criando conteúdo de qualidade
+                      {userIsAdmin 
+                        ? 'Painel de Administração - Gerencie conteúdo e usuários' 
+                        : 'Continue aprendendo e evoluindo seu inglês'
+                      }
                     </Typography>
                   </Box>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    startIcon={<AddIcon />}
-                    onClick={handleOpenCourseModal}
-                    sx={{ 
-                      backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.3)'
-                      }
-                    }}
-                  >
-                    Criar Curso
-                  </Button>
+                  
+                  {/* Botão "Criar Curso" apenas para ADMINs */}
+                  {userIsAdmin && (
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      startIcon={<AddIcon />}
+                      onClick={handleOpenCourseModal}
+                      sx={{ 
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.3)'
+                        }
+                      }}
+                    >
+                      Criar Curso
+                    </Button>
+                  )}
                 </Paper>
               </Grid>
 
               {[
-                { title: 'Cursos Criados', value: '5' },
-                { title: 'Alunos Matriculados', value: '127' },
-                { title: 'Avaliação Média', value: '4.8' },
-                { title: 'Receita Total', value: 'R$ 2.450' },
-              ].map((stat) => (
-                <Grid item xs={12} sm={6} md={3} key={stat.title}>
-                  <Paper
-                    sx={{
-                      p: 2,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      height: 140,
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      transition: 'transform 0.2s',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: 4
-                      }
-                    }}
-                  >
-                    <Typography variant="h4" component="div">
-                      {stat.value}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {stat.title}
-                    </Typography>
-                  </Paper>
-                </Grid>
-              ))}
+                { title: 'Cursos Criados', value: '5', adminOnly: true },
+                { title: userIsAdmin ? 'Usuários Ativos' : 'Cursos Concluídos', value: userIsAdmin ? '127' : '3' },
+                { title: userIsAdmin ? 'Cursos Ativos' : 'Certificados', value: userIsAdmin ? '12' : '2' },
+                { title: userIsAdmin ? 'Receita Total' : 'Horas Estudadas', value: userIsAdmin ? 'R$ 2.450' : '45h' },
+              ].map((stat) => {
+                // Não mostrar estatísticas específicas de admin para usuários comuns
+                if (stat.adminOnly && !userIsAdmin) return null;
+                
+                return (
+                  <Grid item xs={12} sm={6} md={3} key={stat.title}>
+                    <Paper
+                      sx={{
+                        p: 2,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        height: 140,
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: 4
+                        }
+                      }}
+                    >
+                      <Typography variant="h4" component="div">
+                        {stat.value}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {stat.title}
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                );
+              })}
 
               {/* Seção de Cursos Recentes */}
               <Grid item xs={12}>
                 <Paper sx={{ p: 3 }}>
                   <Typography variant="h6" gutterBottom>
-                    Cursos Recentes
+                    {userIsAdmin ? 'Cursos Gerenciados' : 'Meus Cursos'}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Aqui aparecerão os cursos criados recentemente...
+                    {userIsAdmin 
+                      ? 'Aqui aparecerão os cursos que você criou e gerencia...'
+                      : 'Aqui aparecerão os cursos em que você está matriculado...'
+                    }
                   </Typography>
                 </Paper>
               </Grid>
             </Grid>
           </Container>
 
-          {/* Floating Action Button para criar curso (alternativa) */}
-          <Fab
-            color="primary"
-            aria-label="criar curso"
-            onClick={handleOpenCourseModal}
-            sx={{
-              position: 'fixed',
-              bottom: 24,
-              right: 24,
-              display: { xs: 'flex', sm: 'none' } // Mostrar apenas em telas pequenas
-            }}
-          >
-            <AddIcon />
-          </Fab>
+          {/* Floating Action Button para criar curso apenas para ADMINs */}
+          {userIsAdmin && (
+            <Fab
+              color="primary"
+              aria-label="criar curso"
+              onClick={handleOpenCourseModal}
+              sx={{
+                position: 'fixed',
+                bottom: 24,
+                right: 24,
+                display: { xs: 'flex', sm: 'none' } // Mostrar apenas em telas pequenas
+              }}
+            >
+              <AddIcon />
+            </Fab>
+          )}
         </Box>
       </Box>
     </ThemeProvider>

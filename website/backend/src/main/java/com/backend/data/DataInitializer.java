@@ -21,6 +21,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         initAdmin();
+        initAluno();
     }
 
     private void initAdmin() {
@@ -33,7 +34,28 @@ public class DataInitializer implements CommandLineRunner {
 
             userRepository.save(admin);
 
-            System.out.println("Usuário admin padrão criado com sucesso!");
+            System.out.println("✅ Usuário admin padrão criado com sucesso!");
+            System.out.println("📧 Email: admin@englishforalltime.com");
+            System.out.println("🔑 Senha: admin123");
+            System.out.println("👑 Role: ADMIN");
         }
     }
+
+    private void initAluno() {
+        if(userRepository.findByLogin("aluno@englishforalltime.com") == null) {
+            User aluno = new User();
+            aluno.setLogin("aluno@englishforalltime.com");
+            aluno.setPassword(passwordEncoder.encode("aluno123"));
+            aluno.setRole(UserRole.USER);
+            aluno.setCreatedAt(java.time.LocalDateTime.now());
+
+            userRepository.save(aluno);
+
+            System.out.println("✅ Usuário aluno padrão criado com sucesso!");
+            System.out.println("📧 Email: aluno@englishforalltime.com");
+            System.out.println("🔑 Senha: aluno123");
+            System.out.println("👤 Role: USER");
+        }
+    }
+
 }
