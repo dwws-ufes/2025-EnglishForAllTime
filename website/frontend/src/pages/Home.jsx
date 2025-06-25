@@ -26,6 +26,9 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  Fab,
+  Snackbar,
+  Alert as MuiAlert
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -35,9 +38,11 @@ import {
   Logout as LogoutIcon,
   Settings as SettingsIcon,
   ChevronLeft as ChevronLeftIcon,
+  Add as AddIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import CourseFormModal from '../components/admin/course/CourseFormModal';
 
 const darkTheme = createTheme({
   palette: {
@@ -60,6 +65,9 @@ const drawerWidth = 240;
 function Home() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const [courseModalOpen, setCourseModalOpen] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
   const { user, signOut } = useAuth();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -85,6 +93,25 @@ function Home() {
   const handleLogoutConfirm = () => {
     signOut();
     setLogoutDialogOpen(false);
+  };
+
+  const handleOpenCourseModal = () => {
+    setCourseModalOpen(true);
+  };
+
+  const handleCloseCourseModal = () => {
+    setCourseModalOpen(false);
+  };
+
+  const handleCourseCreated = (newCourse) => {
+    console.log('Novo curso criado:', newCourse);
+    setSnackbarMessage(`Curso "${newCourse.title}" criado com sucesso!`);
+    setSnackbarOpen(true);
+    // Aqui você pode atualizar uma lista de cursos se necessário
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   const menuItems = [
@@ -242,6 +269,29 @@ function Home() {
           </DialogActions>
         </Dialog>
 
+        {/* Modal de Criação de Curso */}
+        <CourseFormModal
+          open={courseModalOpen}
+          onClose={handleCloseCourseModal}
+          onCourseCreated={handleCourseCreated}
+        />
+
+        {/* Snackbar para notificações */}
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={4000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <MuiAlert 
+            onClose={handleCloseSnackbar} 
+            severity="success" 
+            sx={{ width: '100%' }}
+          >
+            {snackbarMessage}
+          </MuiAlert>
+        </Snackbar>
+
         <Box component="main" sx={{ flexGrow: 1, p: 3, marginLeft: open ? `${drawerWidth}px` : 0, transition: 'margin 0.2s' }}>
           <Toolbar />
           <Container maxWidth="lg">
@@ -259,22 +309,36 @@ function Home() {
                   <Avatar sx={{ width: 56, height: 56 }}>
                     {user?.name?.charAt(0) || 'U'}
                   </Avatar>
-                  <Box>
+                  <Box sx={{ flexGrow: 1 }}>
                     <Typography variant="h5" component="h1">
-                      Bem-vindo(a), {user?.name || 'Aluno(a)'}!
+                      Bem-vindo(a), {user?.name || 'Professor(a)'}!
                     </Typography>
                     <Typography variant="subtitle1">
-                      Continue sua jornada de aprendizado
+                      Continue criando conteúdo de qualidade
                     </Typography>
                   </Box>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<AddIcon />}
+                    onClick={handleOpenCourseModal}
+                    sx={{ 
+                      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.3)'
+                      }
+                    }}
+                  >
+                    Criar Curso
+                  </Button>
                 </Paper>
               </Grid>
 
               {[
-                { title: 'Cursos em Andamento', value: '3' },
-                { title: 'Horas Estudadas', value: '24h' },
-                { title: 'Exercícios Concluídos', value: '150' },
-                { title: 'Nível Atual', value: 'B2' },
+                { title: 'Cursos Criados', value: '5' },
+                { title: 'Alunos Matriculados', value: '127' },
+                { title: 'Avaliação Média', value: '4.8' },
+                { title: 'Receita Total', value: 'R$ 2.450' },
               ].map((stat) => (
                 <Grid item xs={12} sm={6} md={3} key={stat.title}>
                   <Paper
@@ -285,6 +349,12 @@ function Home() {
                       alignItems: 'center',
                       height: 140,
                       justifyContent: 'center',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: 4
+                      }
                     }}
                   >
                     <Typography variant="h4" component="div">
@@ -296,8 +366,35 @@ function Home() {
                   </Paper>
                 </Grid>
               ))}
+
+              {/* Seção de Cursos Recentes */}
+              <Grid item xs={12}>
+                <Paper sx={{ p: 3 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Cursos Recentes
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Aqui aparecerão os cursos criados recentemente...
+                  </Typography>
+                </Paper>
+              </Grid>
             </Grid>
           </Container>
+
+          {/* Floating Action Button para criar curso (alternativa) */}
+          <Fab
+            color="primary"
+            aria-label="criar curso"
+            onClick={handleOpenCourseModal}
+            sx={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              display: { xs: 'flex', sm: 'none' } // Mostrar apenas em telas pequenas
+            }}
+          >
+            <AddIcon />
+          </Fab>
         </Box>
       </Box>
     </ThemeProvider>
