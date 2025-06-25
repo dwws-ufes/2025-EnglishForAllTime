@@ -3,11 +3,14 @@ package com.backend.controller;
 import com.backend.domain.Course;
 import com.backend.domain.Difficulty;
 import com.backend.domain.User;
+import com.backend.service.AuthenticationService;
+import com.backend.service.AuthorizationService;
 import com.backend.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +21,7 @@ import java.util.List;
 public class CourseController {
 
     private final CourseService courseService;
+    private final AuthorizationService authorizationService;
 
     @GetMapping
     public ResponseEntity<List<Course>> getAllCourses() {
@@ -31,18 +35,49 @@ public class CourseController {
 
     @PostMapping
     public ResponseEntity<Course> createCourse(
-            @RequestBody Course course, 
+            @RequestBody Course course,
             Authentication authentication) {
-        
-        // Obter o usuário autenticado
-        User authenticatedUser = (User) authentication.getPrincipal();
-        
-        // Definir o criador do curso
-        course.setCreatedBy(authenticatedUser);
-        
-        // Criar o curso
-        Course created = courseService.save(course);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+
+        try {
+            User authenticatedUser = null;
+
+            // Método 1: Cast direto (preferido)
+            if (authentication.getPrincipal() instanceof User) {
+                authenticatedUser = (User) authentication.getPrincipal();
+            }
+            // Método 2: Buscar por username se cast falhar
+            else if (authentication.getPrincipal() instanceof UserDetails) {
+                UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+                String username = userDetails.getUsername();
+                // Buscar o usuário no banco pelo username
+                authenticatedUser = authorizationService.loadUserByUsername(username);
+            }
+            // Método 3: Último recurso - buscar por nome
+            else {
+                String username = authentication.getName();
+                authenticatedUser = authorizationService.loadUserByUsername(username);
+            }
+
+            if (authenticatedUser == null) {
+                System.err.println("❌ Usuário não encontrado!");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+
+            System.out.println("✅ Usuário encontrado: " + authenticatedUser.getLogin());
+
+            // Definir o criador do curso
+            course.setCreatedBy(authenticatedUser);
+
+            // Criar o curso
+            Course created = courseService.save(course);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+
+        } catch (Exception e) {
+            System.err.println("❌ Erro: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PutMapping("/{id}")

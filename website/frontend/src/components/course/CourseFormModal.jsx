@@ -30,8 +30,8 @@ import {
   Preview as PreviewIcon,
   Help as HelpIcon
 } from '@mui/icons-material';
-import { useAuth } from '../../../contexts/AuthContext';
-import api from '../../../services/api'; // Usar o serviço de API configurado
+import { useAuth } from '../../contexts/AuthContext';
+import api from '../../services/api'; // Usar o serviço de API configurado
 
 const CourseFormModal = ({ open, onClose, onCourseCreated }) => {
   const [formData, setFormData] = useState({
