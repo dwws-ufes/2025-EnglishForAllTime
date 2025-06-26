@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/courses")
+@RequestMapping("/api/courses")
 @RequiredArgsConstructor
 public class CourseController {
 
@@ -25,8 +25,33 @@ public class CourseController {
 
     @GetMapping
     public ResponseEntity<List<Course>> getAllCourses() {
-        return ResponseEntity.ok(courseService.findAll());
+        try {
+            System.out.println("🔍 [GET_COURSES] Iniciando busca de cursos...");
+
+            List<Course> courses = courseService.findAll();
+
+            System.out.println("📚 [GET_COURSES] Total de cursos encontrados: " + courses.size());
+
+            // Log detalhado dos cursos
+            for (int i = 0; i < Math.min(courses.size(), 3); i++) {
+                Course course = courses.get(i);
+                System.out.println("📖 [GET_COURSES] Curso " + (i+1) + ": " + course.getTitle());
+                System.out.println("   - ID: " + course.getId());
+                System.out.println("   - Dificuldade: " + course.getDifficulty());
+                System.out.println("   - Criado por: " + (course.getCreatedBy() != null ? course.getCreatedBy().getLogin() : "N/A"));
+            }
+
+            System.out.println("✅ [GET_COURSES] Retornando cursos com sucesso!");
+            return ResponseEntity.ok(courses);
+
+        } catch (Exception e) {
+            System.err.println("❌ [GET_COURSES] Erro no controller: " + e.getClass().getSimpleName());
+            System.err.println("❌ [GET_COURSES] Mensagem: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<Course> getCourseById(@PathVariable Long id) {

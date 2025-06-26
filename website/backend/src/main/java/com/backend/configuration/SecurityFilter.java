@@ -28,20 +28,47 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String requestURI = request.getRequestURI();
+        String method = request.getMethod();
+
+        System.out.println("🔍 [SECURITY_FILTER] " + method + " " + requestURI);
+
         var token = this.recoverToken(request);
+        System.out.println("🔑 [SECURITY_FILTER] Token presente: " + (token != null ? "SIM" : "NÃO"));
 
         if(token != null) {
-            var login = tokenService.validateToken(token);
-            UserDetails user = userRepository.findByLogin(login);
+            try {
+                var login = tokenService.validateToken(token);
+                System.out.println("✅ [SECURITY_FILTER] Token válido para usuário: " + login);
 
-            var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                UserDetails user = userRepository.findByLogin(login);
+
+                if (user != null) {
+                    System.out.println("👤 [SECURITY_FILTER] Usuário encontrado: " + user.getUsername());
+                    System.out.println("🔐 [SECURITY_FILTER] Authorities: " + user.getAuthorities());
+
+                    var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                    System.out.println("🎯 [SECURITY_FILTER] Usuário autenticado com sucesso!");
+                } else {
+                    System.err.println("❌ [SECURITY_FILTER] Usuário não encontrado no banco: " + login);
+                }
+
+            } catch (Exception e) {
+                System.err.println("❌ [SECURITY_FILTER] Erro na validação do token: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
+
         filterChain.doFilter(request, response);
     }
 
+
     private String recoverToken(HttpServletRequest request) {
         var authHeader = request.getHeader("Authorization");
+        System.out.println("📝 [SECURITY_FILTER] Authorization header: " + (authHeader != null ? authHeader.substring(0, Math.min(authHeader.length(), 20)) + "..." : "NULL"));
+
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
             return null;
         }

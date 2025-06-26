@@ -66,16 +66,27 @@ const CourseGrid = ({
     }, [propCourses]);
 
     const fetchCourses = async () => {
-        setLoading(true);
         try {
+            console.log('🚀 [COURSEGRID] Iniciando fetchCourses...');
+            setLoading(true);
+
+            // ✅ Agora sem /api (pois já está no baseURL)
             const response = await api.get('/courses');
-            setCourses(response.data);
+
+            console.log('✅ [COURSEGRID] Response recebido:', response.data);
+
+            if (Array.isArray(response.data)) {
+                setCourses(response.data);
+                console.log('🎯 [COURSEGRID] Cursos salvos no state!');
+            }
+
         } catch (error) {
-            console.error('Erro ao buscar cursos:', error);
+            console.error('❌ [COURSEGRID] Erro:', error);
         } finally {
             setLoading(false);
         }
     };
+
 
     // Filtrar e ordenar cursos
     const filteredAndSortedCourses = React.useMemo(() => {
