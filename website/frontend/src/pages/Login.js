@@ -72,8 +72,9 @@ const Login = () => {
           name: email.split('@')[0] || 'Usuário',
           role: 'USER' 
         });
-        navigate('/home');
       }
+      console.log('🚀 Redirecionando para /home...');
+      navigate('/home');
 
     } catch (err) {
       console.error('❌ Erro no login:', err);
