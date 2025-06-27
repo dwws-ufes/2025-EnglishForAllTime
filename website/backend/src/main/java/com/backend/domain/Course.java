@@ -36,6 +36,7 @@ public class Course {
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Module> modules = new ArrayList<>();
+    // Removido temporariamente até a tabela module ser criada
+    // @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    // private List<Module> modules = new ArrayList<>();
 }

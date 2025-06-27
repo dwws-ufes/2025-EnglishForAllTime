@@ -4,10 +4,11 @@ import com.backend.domain.Course;
 import com.backend.domain.Difficulty;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CourseService {
     List<Course> findAll();
-    Course findById(Long id);
+    Optional<Course> findById(Long id);
     Course save(Course course);
     Course update(Long id, Course course);
     void delete(Long id);
