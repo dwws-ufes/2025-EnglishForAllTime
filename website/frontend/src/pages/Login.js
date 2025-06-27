@@ -61,7 +61,7 @@ const Login = () => {
         // Fazer signIn com token e informações do usuário
         await signIn(token, userInfo);
         
-        console.log('🚀 Redirecionando para /home...');
+        console.log('✅ Login completo, redirecionando para /home...');
         navigate('/home');
         
       } catch (userError) {
@@ -72,9 +72,10 @@ const Login = () => {
           name: email.split('@')[0] || 'Usuário',
           role: 'USER' 
         });
+
+        console.log('✅ Login com dados básicos, redirecionando para /home...');
+        navigate('/home');
       }
-      console.log('🚀 Redirecionando para /home...');
-      navigate('/home');
 
     } catch (err) {
       console.error('❌ Erro no login:', err);

@@ -6,14 +6,7 @@ import {
   createTheme,
   AppBar,
   Toolbar,
-  IconButton,
   Typography,
-  Drawer,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemButton,
   Container,
   Grid,
   Paper,
@@ -31,23 +24,21 @@ import {
   Alert as MuiAlert,
   Chip,
   Tab,
-  Tabs
+  Tabs,
+  IconButton,
+  CircularProgress
 } from '@mui/material';
 import {
-  Menu as MenuIcon,
-  Dashboard as DashboardIcon,
-  School as SchoolIcon,
   AccountCircle as AccountCircleIcon,
   Logout as LogoutIcon,
-  Settings as SettingsIcon,
-  ChevronLeft as ChevronLeftIcon,
   Add as AddIcon,
   AdminPanelSettings as AdminIcon,
   TrendingUp as TrendingUpIcon,
-  LibraryBooks as LibraryBooksIcon
+  LibraryBooks as LibraryBooksIcon,
+  Dashboard as DashboardIcon,
+  School as SchoolIcon, Settings
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import CourseFormModal from '../components/course/CourseFormModal';
 import CourseList from '../components/course/CourseList';
 
@@ -67,25 +58,39 @@ const darkTheme = createTheme({
   },
 });
 
-const drawerWidth = 240;
-
 function Home() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [courseModalOpen, setCourseModalOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [activeTab, setActiveTab] = useState(0); // 0: Dashboard, 1: Cursos
-  const { user, signOut, isAdmin } = useAuth();
-  const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(0);
+  const { user, signOut, isAdmin, loading } = useAuth();
 
-  // Verificar se é admin
+  // Aguardar carregamento dos dados do usuário
+  if (loading) {
+    return (
+      <ThemeProvider theme={darkTheme}>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="100vh"
+        >
+          <CircularProgress size={60} />
+        </Box>
+      </ThemeProvider>
+    );
+  }
+
   const userIsAdmin = isAdmin();
 
-  const handleDrawerToggle = () => {
-    setOpen(!open);
-  };
+  console.log('🏠 [HOME] Estado do usuário:', {
+    user: user?.email,
+    role: user?.role,
+    isAdmin: userIsAdmin,
+    loading
+  });
 
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -122,7 +127,6 @@ function Home() {
     console.log('Novo curso criado:', newCourse);
     setSnackbarMessage(`Curso "${newCourse.title || newCourse.nome}" criado com sucesso!`);
     setSnackbarOpen(true);
-    // Atualizar para a aba de cursos
     setActiveTab(1);
   };
 
@@ -133,28 +137,6 @@ function Home() {
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
-
-  const menuItems = [
-    {
-      text: 'Dashboard',
-      icon: <DashboardIcon />,
-      onClick: () => setActiveTab(0)
-    },
-    {
-      text: 'Cursos',
-      icon: <SchoolIcon />,
-      onClick: () => setActiveTab(1)
-    },
-  ];
-
-  // Adicionar item de menu admin apenas para administradores
-  if (userIsAdmin) {
-    menuItems.push({
-      text: 'Administração',
-      icon: <AdminIcon />,
-      onClick: () => navigate('/admin')
-    });
-  }
 
   const renderDashboard = () => (
       <Container maxWidth="lg">
@@ -184,7 +166,6 @@ function Home() {
                 </Typography>
               </Box>
 
-              {/* Botão "Criar Curso" apenas para ADMINs */}
               {userIsAdmin && (
                   <Button
                       variant="contained"
@@ -222,7 +203,6 @@ function Home() {
               icon: <DashboardIcon />
             },
           ].map((stat) => {
-            // Não mostrar estatísticas específicas de admin para usuários comuns
             if (stat.adminOnly && !userIsAdmin) return null;
 
             return (
@@ -268,7 +248,6 @@ function Home() {
             );
           })}
 
-          {/* Seção de Cursos Recentes */}
           <Grid item xs={12}>
             <Paper sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -299,25 +278,15 @@ function Home() {
 
   return (
       <ThemeProvider theme={darkTheme}>
-        <Box sx={{ display: 'flex' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <CssBaseline />
 
-          <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+          <AppBar position="fixed">
             <Toolbar>
-              <IconButton
-                  color="inherit"
-                  aria-label="abrir menu"
-                  onClick={handleDrawerToggle}
-                  edge="start"
-                  sx={{ mr: 2 }}
-              >
-                <MenuIcon />
-              </IconButton>
-              <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                 English For All Time
               </Typography>
 
-              {/* Mostrar chip de ADMIN se for administrador */}
               {userIsAdmin && (
                   <Chip
                       icon={<AdminIcon />}
@@ -338,63 +307,6 @@ function Home() {
               </IconButton>
             </Toolbar>
           </AppBar>
-
-          <Drawer
-              sx={{
-                width: drawerWidth,
-                flexShrink: 0,
-                '& .MuiDrawer-paper': {
-                  width: drawerWidth,
-                  boxSizing: 'border-box',
-                },
-              }}
-              variant="persistent"
-              anchor="left"
-              open={open}
-          >
-            <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'flex-end',
-                  padding: '8px',
-                }}
-            >
-              <IconButton onClick={handleDrawerToggle}>
-                <ChevronLeftIcon />
-              </IconButton>
-            </Box>
-            <Divider />
-            <List>
-              {menuItems.map((item) => (
-                  <ListItem
-                      key={item.text}
-                      disablePadding
-                      sx={{ display: 'block' }}
-                      onClick={item.onClick}
-                  >
-                    <ListItemButton
-                        sx={{
-                          minHeight: 48,
-                          justifyContent: 'initial',
-                          px: 2.5,
-                        }}
-                    >
-                      <ListItemIcon
-                          sx={{
-                            minWidth: 0,
-                            mr: 3,
-                            justifyContent: 'center',
-                          }}
-                      >
-                        {item.icon}
-                      </ListItemIcon>
-                      <ListItemText primary={item.text} />
-                    </ListItemButton>
-                  </ListItem>
-              ))}
-            </List>
-          </Drawer>
 
           <Menu
               id="profile-menu"
@@ -419,15 +331,11 @@ function Home() {
             </MenuItem>
             <Divider />
             <MenuItem onClick={handleClose}>
-              <ListItemIcon>
-                <SettingsIcon fontSize="small" />
-              </ListItemIcon>
+              <Settings fontSize="small" sx={{ mr: 1 }} />
               Configurações
             </MenuItem>
             <MenuItem onClick={handleLogoutClick}>
-              <ListItemIcon>
-                <LogoutIcon fontSize="small" />
-              </ListItemIcon>
+              <LogoutIcon fontSize="small" sx={{ mr: 1 }} />
               Sair
             </MenuItem>
           </Menu>
@@ -459,7 +367,6 @@ function Home() {
             </DialogActions>
           </Dialog>
 
-          {/* Modal de Criação de Curso - Renderizar apenas se for ADMIN */}
           {userIsAdmin && (
               <CourseFormModal
                   open={courseModalOpen}
@@ -468,7 +375,6 @@ function Home() {
               />
           )}
 
-          {/* Snackbar para notificações */}
           <Snackbar
               open={snackbarOpen}
               autoHideDuration={4000}
@@ -484,10 +390,7 @@ function Home() {
             </MuiAlert>
           </Snackbar>
 
-          <Box component="main" sx={{ flexGrow: 1, p: 3, marginLeft: open ? `${drawerWidth}px` : 0, transition: 'margin 0.2s' }}>
-            <Toolbar />
-
-            {/* Tabs Navigation */}
+          <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
               <Tabs value={activeTab} onChange={handleTabChange}>
                 <Tab
@@ -503,13 +406,9 @@ function Home() {
               </Tabs>
             </Box>
 
-            {/* Content based on active tab */}
             {activeTab === 0 && renderDashboard()}
-
-            {/* Substituir CourseGrid por CourseList */}
             {activeTab === 1 && <CourseList />}
 
-            {/* Floating Action Button para criar curso apenas para ADMINs */}
             {userIsAdmin && (
                 <Fab
                     color="primary"
