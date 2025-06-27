@@ -49,7 +49,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import CourseFormModal from '../components/course/CourseFormModal';
-import CourseGrid from '../components/course/CourseGrid';
+import CourseList from '../components/course/CourseList';
 
 const darkTheme = createTheme({
   palette: {
@@ -120,7 +120,7 @@ function Home() {
 
   const handleCourseCreated = (newCourse) => {
     console.log('Novo curso criado:', newCourse);
-    setSnackbarMessage(`Curso "${newCourse.title}" criado com sucesso!`);
+    setSnackbarMessage(`Curso "${newCourse.title || newCourse.nome}" criado com sucesso!`);
     setSnackbarOpen(true);
     // Atualizar para a aba de cursos
     setActiveTab(1);
@@ -132,50 +132,6 @@ function Home() {
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
-  };
-
-  // Course handlers
-  const handleCourseEnroll = (courseId) => {
-    console.log('Matricular no curso:', courseId);
-    setSnackbarMessage('Matrícula realizada com sucesso!');
-    setSnackbarOpen(true);
-  };
-
-  const handleCourseBookmark = (courseId) => {
-    console.log('Favoritar curso:', courseId);
-    setSnackbarMessage('Curso adicionado aos favoritos!');
-    setSnackbarOpen(true);
-  };
-
-  const handleCourseShare = (course) => {
-    if (navigator.share) {
-      navigator.share({
-        title: course.title,
-        text: course.description,
-        url: window.location.href
-      });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      setSnackbarMessage('Link copiado para a área de transferência!');
-      setSnackbarOpen(true);
-    }
-  };
-
-  const handleCourseEdit = (course) => {
-    console.log('Editar curso:', course);
-    setSnackbarMessage('Funcionalidade de edição em desenvolvimento!');
-    setSnackbarOpen(true);
-  };
-
-  const handleCourseDelete = (course) => {
-    console.log('Excluir curso:', course);
-    setSnackbarMessage('Funcionalidade de exclusão em desenvolvimento!');
-    setSnackbarOpen(true);
-  };
-
-  const handleCourseView = (course) => {
-    console.log('Ver detalhes do curso:', course);
-    navigate(`/course/${course.id}`);
   };
 
   const menuItems = [
@@ -550,16 +506,8 @@ function Home() {
             {/* Content based on active tab */}
             {activeTab === 0 && renderDashboard()}
 
-            {activeTab === 1 && (
-                <CourseGrid
-                    onCourseEnroll={handleCourseEnroll}
-                    onCourseBookmark={handleCourseBookmark}
-                    onCourseShare={handleCourseShare}
-                    onCourseEdit={handleCourseEdit}
-                    onCourseDelete={handleCourseDelete}
-                    onCourseView={handleCourseView}
-                />
-            )}
+            {/* Substituir CourseGrid por CourseList */}
+            {activeTab === 1 && <CourseList />}
 
             {/* Floating Action Button para criar curso apenas para ADMINs */}
             {userIsAdmin && (

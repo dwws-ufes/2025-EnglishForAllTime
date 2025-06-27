@@ -13,7 +13,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/courses")
@@ -24,34 +28,38 @@ public class CourseController {
     private final AuthorizationService authorizationService;
 
     @GetMapping
-    public ResponseEntity<List<Course>> getAllCourses() {
+    public ResponseEntity<List<Map<String, Object>>> getAllCourses() {
         try {
             System.out.println("🔍 [GET_COURSES] Iniciando busca de cursos...");
 
             List<Course> courses = courseService.findAll();
-
             System.out.println("📚 [GET_COURSES] Total de cursos encontrados: " + courses.size());
 
-            // Log detalhado dos cursos
-            for (int i = 0; i < Math.min(courses.size(), 3); i++) {
-                Course course = courses.get(i);
-                System.out.println("📖 [GET_COURSES] Curso " + (i+1) + ": " + course.getTitle());
-                System.out.println("   - ID: " + course.getId());
-                System.out.println("   - Dificuldade: " + course.getDifficulty());
-                System.out.println("   - Criado por: " + (course.getCreatedBy() != null ? course.getCreatedBy().getLogin() : "N/A"));
-            }
+            // Converter manualmente para Map para evitar problemas de serialização
+            List<Map<String, Object>> coursesResponse = courses.stream().map(course -> {
+                Map<String, Object> courseMap = new HashMap<>();
+                courseMap.put("id", course.getId());
+                courseMap.put("title", course.getTitle());
+                courseMap.put("description", course.getDescription());
+                courseMap.put("difficulty", course.getDifficulty() != null ? course.getDifficulty().toString() : null);
+                courseMap.put("createdAt", course.getCreatedAt() != null ? course.getCreatedAt().toString() : null);
+                courseMap.put("createdBy", course.getCreatedBy() != null ? course.getCreatedBy().getLogin() : null);
 
-            System.out.println("✅ [GET_COURSES] Retornando cursos com sucesso!");
-            return ResponseEntity.ok(courses);
+                System.out.println("📖 [GET_COURSES] Curso serializado: " + course.getTitle());
+                return courseMap;
+            }).collect(Collectors.toList());
+
+            System.out.println("✅ [GET_COURSES] Retornando " + coursesResponse.size() + " cursos!");
+            return ResponseEntity.ok(coursesResponse);
 
         } catch (Exception e) {
             System.err.println("❌ [GET_COURSES] Erro no controller: " + e.getClass().getSimpleName());
             System.err.println("❌ [GET_COURSES] Mensagem: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.emptyList());
         }
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<Course> getCourseById(@PathVariable Long id) {

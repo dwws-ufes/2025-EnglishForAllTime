@@ -13,22 +13,12 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
-          {/* Rota que requer apenas autenticação */}
           <Route
             path="/home"
             element={
               <PrivateRoute>
                 <Home />
               </PrivateRoute>
-            }
-          />
-          {/* Rota que requer role ADMIN */}
-          <Route
-            path="/admin/courses"
-            element={
-              <AdminRoute>
-
-              </AdminRoute>
             }
           />
         </Routes>
