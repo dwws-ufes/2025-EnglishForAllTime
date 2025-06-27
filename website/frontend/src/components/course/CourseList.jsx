@@ -24,7 +24,8 @@ import {
     Tooltip,
     Avatar,
     Fade,
-    Zoom
+    Zoom,
+    Snackbar
 } from '@mui/material';
 import {
     Search as SearchIcon,
@@ -41,6 +42,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
+import CourseEditModal from './CourseEditModal';
 
 const CourseList = () => {
     const [courses, setCourses] = useState([]);
@@ -49,28 +51,64 @@ const CourseList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [viewMode, setViewMode] = useState('cards'); // 'cards' ou 'table'
+    const [viewMode, setViewMode] = useState('cards');
+    
+    // Estados do modal de edição
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [selectedCourse, setSelectedCourse] = useState(null);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    
     const { isAdmin } = useAuth();
-
     const userIsAdmin = isAdmin();
 
     useEffect(() => {
-        const fetchCourses = async () => {
-            try {
-                setLoading(true);
-                const response = await api.get('/courses');
-                setCourses(response.data);
-                console.log('Cursos carregados do backend:', response.data);
-            } catch (err) {
-                setError('Erro ao carregar cursos: ' + err.message);
-                console.error('Erro ao buscar cursos:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchCourses();
     }, []);
+
+    const fetchCourses = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/courses');
+            setCourses(response.data);
+            console.log('Cursos carregados do backend:', response.data);
+        } catch (err) {
+            setError('Erro ao carregar cursos: ' + err.message);
+            console.error('Erro ao buscar cursos:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Handlers para o modal de edição
+    const handleEditClick = (course) => {
+        console.log('📝 Abrindo editor para curso:', course);
+        setSelectedCourse(course);
+        setEditModalOpen(true);
+    };
+
+    const handleCloseEditModal = () => {
+        setEditModalOpen(false);
+        setSelectedCourse(null);
+    };
+
+    const handleCourseUpdated = (updatedCourse) => {
+        console.log('✅ Curso atualizado:', updatedCourse);
+        
+        // Atualizar a lista de cursos
+        setCourses(prevCourses => 
+            prevCourses.map(course => 
+                course.id === updatedCourse.id ? updatedCourse : course
+            )
+        );
+        
+        setSnackbarMessage('Curso atualizado com sucesso!');
+        setSnackbarOpen(true);
+    };
+
+    const handleCloseSnackbar = () => {
+        setSnackbarOpen(false);
+    };
 
     // Filtrar cursos baseado no termo de busca
     const filteredCourses = courses.filter(course =>
@@ -286,7 +324,11 @@ const CourseList = () => {
                                     {userIsAdmin && (
                                         <>
                                             <Tooltip title="Editar curso">
-                                                <IconButton size="small" color="info">
+                                                <IconButton 
+                                                    size="small" 
+                                                    color="info"
+                                                    onClick={() => handleEditClick(course)}
+                                                >
                                                     <EditIcon />
                                                 </IconButton>
                                             </Tooltip>
@@ -421,7 +463,11 @@ const CourseList = () => {
                                         {userIsAdmin && (
                                             <>
                                                 <Tooltip title="Editar">
-                                                    <IconButton size="small" color="info">
+                                                    <IconButton 
+                                                        size="small" 
+                                                        color="info"
+                                                        onClick={() => handleEditClick(course)}
+                                                    >
                                                         <EditIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
@@ -553,6 +599,26 @@ const CourseList = () => {
                     </Box>
                 </>
             )}
+
+            {/* Modal de Edição */}
+            <CourseEditModal
+                open={editModalOpen}
+                onClose={handleCloseEditModal}
+                course={selectedCourse}
+                onCourseUpdated={handleCourseUpdated}
+            />
+
+            {/* Snackbar para notificações */}
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={4000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 };

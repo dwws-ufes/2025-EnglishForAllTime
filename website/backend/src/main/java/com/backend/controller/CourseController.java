@@ -3,6 +3,7 @@ package com.backend.controller;
 import com.backend.domain.Course;
 import com.backend.domain.Difficulty;
 import com.backend.domain.User;
+import com.backend.domain.UserRole;
 import com.backend.service.AuthenticationService;
 import com.backend.service.AuthorizationService;
 import com.backend.service.CourseService;
@@ -13,10 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -26,6 +24,7 @@ public class CourseController {
 
     private final CourseService courseService;
     private final AuthorizationService authorizationService;
+    private final AuthenticationService authenticationService;
 
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> getAllCourses() {
@@ -63,7 +62,25 @@ public class CourseController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Course> getCourseById(@PathVariable Long id) {
-        return ResponseEntity.ok(courseService.findById(id));
+        try {
+            System.out.println("🔍 [GET_COURSE_BY_ID] Buscando curso com ID: " + id);
+
+            Optional<Course> courseOpt = courseService.findById(id);
+            if (courseOpt.isEmpty()) {
+                System.err.println("❌ [GET_COURSE_BY_ID] Curso não encontrado: " + id);
+                return ResponseEntity.notFound().build();
+            }
+
+            Course course = courseOpt.get();
+            System.out.println("✅ [GET_COURSE_BY_ID] Curso encontrado: " + course.getTitle());
+
+            return ResponseEntity.ok(course);
+
+        } catch (Exception e) {
+            System.err.println("❌ [GET_COURSE_BY_ID] Erro: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PostMapping
@@ -114,22 +131,115 @@ public class CourseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Course> updateCourse(
-            @PathVariable Long id, 
-            @RequestBody Course course,
+    public ResponseEntity<Map<String, Object>> updateCourse(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> courseData,
             Authentication authentication) {
-        
-        // Obter o usuário autenticado para auditoria
-        User authenticatedUser = (User) authentication.getPrincipal();
-        
-        Course updated = courseService.update(id, course);
-        return ResponseEntity.ok(updated);
+        try {
+            System.out.println("🔄 [UPDATE_COURSE] Iniciando atualização do curso ID: " + id);
+            System.out.println("📝 [UPDATE_COURSE] Dados recebidos: " + courseData);
+
+            // Buscar o curso existente
+            Optional<Course> existingCourseOpt = courseService.findById(id);
+            if (existingCourseOpt.isEmpty()) {
+                System.err.println("❌ [UPDATE_COURSE] Curso não encontrado: " + id);
+                return ResponseEntity.notFound().build();
+            }
+
+            Course existingCourse = existingCourseOpt.get();
+            System.out.println("📖 [UPDATE_COURSE] Curso encontrado: " + existingCourse.getTitle());
+
+            // Verificar se o usuário é admin ou o criador do curso
+            String userLogin = authentication.getName();
+            User currentUser = authorizationService.loadUserByUsername(userLogin);
+
+            boolean isAdmin = currentUser.getRole() == UserRole.ADMIN;
+            boolean isCreator = existingCourse.getCreatedBy() != null &&
+                    existingCourse.getCreatedBy().equals(currentUser);
+
+            if (!isAdmin && !isCreator) {
+                System.err.println("❌ [UPDATE_COURSE] Usuário não autorizado: " + userLogin);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Você não tem permissão para editar este curso"));
+            }
+
+            // Atualizar apenas os campos permitidos
+            if (courseData.containsKey("title")) {
+                String title = (String) courseData.get("title");
+                if (title != null && !title.trim().isEmpty()) {
+                    existingCourse.setTitle(title.trim());
+                    System.out.println("📝 [UPDATE_COURSE] Título atualizado: " + title);
+                }
+            }
+
+            if (courseData.containsKey("description")) {
+                String description = (String) courseData.get("description");
+                if (description != null && !description.trim().isEmpty()) {
+                    existingCourse.setDescription(description.trim());
+                    System.out.println("📝 [UPDATE_COURSE] Descrição atualizada");
+                }
+            }
+
+            if (courseData.containsKey("difficulty")) {
+                String difficultyStr = (String) courseData.get("difficulty");
+                if (difficultyStr != null && !difficultyStr.trim().isEmpty()) {
+                    try {
+                        Difficulty difficulty = Difficulty.valueOf(difficultyStr.toUpperCase());
+                        existingCourse.setDifficulty(difficulty);
+                        System.out.println("📝 [UPDATE_COURSE] Dificuldade atualizada: " + difficulty);
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("❌ [UPDATE_COURSE] Dificuldade inválida: " + difficultyStr);
+                        return ResponseEntity.badRequest()
+                                .body(Map.of("error", "Dificuldade inválida: " + difficultyStr));
+                    }
+                }
+            }
+
+            // Salvar as alterações
+            Course updatedCourse = courseService.save(existingCourse);
+            System.out.println("✅ [UPDATE_COURSE] Curso atualizado com sucesso!");
+
+            // Retornar resposta formatada
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", updatedCourse.getId());
+            response.put("title", updatedCourse.getTitle());
+            response.put("description", updatedCourse.getDescription());
+            response.put("difficulty", updatedCourse.getDifficulty() != null ? updatedCourse.getDifficulty().toString() : null);
+            response.put("createdAt", updatedCourse.getCreatedAt() != null ? updatedCourse.getCreatedAt().toString() : null);
+            response.put("createdBy", updatedCourse.getCreatedBy() != null ? updatedCourse.getCreatedBy().getLogin() : null);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            System.err.println("❌ [UPDATE_COURSE] Erro inesperado: " + e.getClass().getSimpleName());
+            System.err.println("❌ [UPDATE_COURSE] Mensagem: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Erro interno do servidor"));
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
-        courseService.delete(id);
-        return ResponseEntity.noContent().build();
+        try {
+            System.out.println("🗑️ [DELETE_COURSE] Iniciando exclusão do curso ID: " + id);
+
+            Optional<Course> courseOpt = courseService.findById(id);
+            if (courseOpt.isEmpty()) {
+                System.err.println("❌ [DELETE_COURSE] Curso não encontrado: " + id);
+                return ResponseEntity.notFound().build();
+            }
+
+            courseService.delete(id);
+            System.out.println("✅ [DELETE_COURSE] Curso excluído com sucesso!");
+
+            return ResponseEntity.noContent().build();
+
+        } catch (Exception e) {
+            System.err.println("❌ [DELETE_COURSE] Erro: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/filter")

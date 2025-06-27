@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,9 +22,8 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Course findById(Long id) {
-        return courseRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Curso não encontrado"));
+    public Optional<Course> findById(Long id) {
+        return courseRepository.findById(id);
     }
 
     @Override
@@ -37,14 +37,19 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Course update(Long id, Course course) {
-        Course existing = findById(id);
+        // CORREÇÃO: Usar .get() para extrair o Course do Optional
+        Course existing = findById(id)
+                .orElseThrow(() -> new RuntimeException("Curso não encontrado com ID: " + id));
+
         existing.setTitle(course.getTitle());
         existing.setDescription(course.getDescription());
         existing.setDifficulty(course.getDifficulty());
         existing.setThumbnailUrl(course.getThumbnailUrl());
         existing.setCreatedBy(course.getCreatedBy());
+
         return courseRepository.save(existing);
     }
+
 
     @Override
     public void delete(Long id) {
