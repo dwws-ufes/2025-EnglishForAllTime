@@ -1,5 +1,6 @@
 package com.backend.controller;
 
+import com.backend.Util.DebugUtil;
 import com.backend.domain.Course;
 import com.backend.domain.Difficulty;
 import com.backend.domain.User;
@@ -24,14 +25,15 @@ public class CourseController {
 
     private final CourseService courseService;
     private final AuthorizationService authorizationService;
+    private final DebugUtil debugUtil;
 
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> getAllCourses() {
         try {
-            System.out.println("🔍 [GET_COURSES] Iniciando busca de cursos...");
+            debugUtil.debug("🔍 [GET_COURSES]", "Iniciando busca de cursos...");
 
             List<Course> courses = courseService.findAll();
-            System.out.println("📚 [GET_COURSES] Total de cursos encontrados: " + courses.size());
+            debugUtil.debug("📚 [GET_COURSES]", "Total de cursos encontrados: " + courses.size());
 
             // Converter manualmente para Map para evitar problemas de serialização
             List<Map<String, Object>> coursesResponse = courses.stream().map(course -> {
@@ -43,17 +45,17 @@ public class CourseController {
                 courseMap.put("createdAt", course.getCreatedAt() != null ? course.getCreatedAt().toString() : null);
                 courseMap.put("createdBy", course.getCreatedBy() != null ? course.getCreatedBy().getLogin() : null);
 
-                System.out.println("📖 [GET_COURSES] Curso serializado: " + course.getTitle());
+                debugUtil.debug("📖 [GET_COURSES]", "Curso serializado: " + course.getTitle());
                 return courseMap;
             }).collect(Collectors.toList());
 
-            System.out.println("✅ [GET_COURSES] Retornando " + coursesResponse.size() + " cursos!");
+            debugUtil.debug("✅ [GET_COURSES]", "Retornando " + coursesResponse.size() + " cursos!");
             return ResponseEntity.ok(coursesResponse);
 
         } catch (Exception e) {
-            System.err.println("❌ [GET_COURSES] Erro no controller: " + e.getClass().getSimpleName());
-            System.err.println("❌ [GET_COURSES] Mensagem: " + e.getMessage());
-            e.printStackTrace();
+            debugUtil.debugError("❌ [GET_COURSES]", "Erro no controller: " + e.getClass().getSimpleName());
+            debugUtil.debugError("❌ [GET_COURSES]", "Mensagem: " + e.getMessage());
+            debugUtil.debugException("Erro completo em getAllCourses", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.emptyList());
         }
@@ -62,22 +64,21 @@ public class CourseController {
     @GetMapping("/{id}")
     public ResponseEntity<Course> getCourseById(@PathVariable Long id) {
         try {
-            System.out.println("🔍 [GET_COURSE_BY_ID] Buscando curso com ID: " + id);
+            debugUtil.debug("🔍 [GET_COURSE_BY_ID]", "Buscando curso com ID: " + id);
 
             Optional<Course> courseOpt = courseService.findById(id);
             if (courseOpt.isEmpty()) {
-                System.err.println("❌ [GET_COURSE_BY_ID] Curso não encontrado: " + id);
+                debugUtil.debugError("❌ [GET_COURSE_BY_ID]", "Curso não encontrado: " + id);
                 return ResponseEntity.notFound().build();
             }
 
             Course course = courseOpt.get();
-            System.out.println("✅ [GET_COURSE_BY_ID] Curso encontrado: " + course.getTitle());
+            debugUtil.debug("✅ [GET_COURSE_BY_ID]", "Curso encontrado: " + course.getTitle());
 
             return ResponseEntity.ok(course);
 
         } catch (Exception e) {
-            System.err.println("❌ [GET_COURSE_BY_ID] Erro: " + e.getMessage());
-            e.printStackTrace();
+            debugUtil.debugException("Erro em getCourseById", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -108,11 +109,11 @@ public class CourseController {
             }
 
             if (authenticatedUser == null) {
-                System.err.println("❌ Usuário não encontrado!");
+                debugUtil.debugError("❌ Usuário não encontrado!");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
-            System.out.println("✅ Usuário encontrado: " + authenticatedUser.getLogin());
+            debugUtil.debug("✅ Usuário encontrado: " + authenticatedUser.getLogin());
 
             // Definir o criador do curso
             course.setCreatedBy(authenticatedUser);
@@ -123,8 +124,7 @@ public class CourseController {
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
 
         } catch (Exception e) {
-            System.err.println("❌ Erro: " + e.getMessage());
-            e.printStackTrace();
+            debugUtil.debugException("Erro em createCourse", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -135,18 +135,18 @@ public class CourseController {
             @RequestBody Map<String, Object> courseData,
             Authentication authentication) {
         try {
-            System.out.println("🔄 [UPDATE_COURSE] Iniciando atualização do curso ID: " + id);
-            System.out.println("📝 [UPDATE_COURSE] Dados recebidos: " + courseData);
+            debugUtil.debug("🔄 [UPDATE_COURSE]", "Iniciando atualização do curso ID: " + id);
+            debugUtil.debug("📝 [UPDATE_COURSE]", "Dados recebidos: " + courseData);
 
             // Buscar o curso existente
             Optional<Course> existingCourseOpt = courseService.findById(id);
             if (existingCourseOpt.isEmpty()) {
-                System.err.println("❌ [UPDATE_COURSE] Curso não encontrado: " + id);
+                debugUtil.debugError("❌ [UPDATE_COURSE]", "Curso não encontrado: " + id);
                 return ResponseEntity.notFound().build();
             }
 
             Course existingCourse = existingCourseOpt.get();
-            System.out.println("📖 [UPDATE_COURSE] Curso encontrado: " + existingCourse.getTitle());
+            debugUtil.debug("📖 [UPDATE_COURSE]", "Curso encontrado: " + existingCourse.getTitle());
 
             // Verificar se o usuário é admin ou o criador do curso
             String userLogin = authentication.getName();
@@ -157,7 +157,7 @@ public class CourseController {
                     existingCourse.getCreatedBy().equals(currentUser);
 
             if (!isAdmin && !isCreator) {
-                System.err.println("❌ [UPDATE_COURSE] Usuário não autorizado: " + userLogin);
+                debugUtil.debugError("❌ [UPDATE_COURSE]", "Usuário não autorizado: " + userLogin);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of("error", "Você não tem permissão para editar este curso"));
             }
@@ -167,7 +167,7 @@ public class CourseController {
                 String title = (String) courseData.get("title");
                 if (title != null && !title.trim().isEmpty()) {
                     existingCourse.setTitle(title.trim());
-                    System.out.println("📝 [UPDATE_COURSE] Título atualizado: " + title);
+                    debugUtil.debug("📝 [UPDATE_COURSE]", "Título atualizado: " + title);
                 }
             }
 
@@ -175,7 +175,7 @@ public class CourseController {
                 String description = (String) courseData.get("description");
                 if (description != null && !description.trim().isEmpty()) {
                     existingCourse.setDescription(description.trim());
-                    System.out.println("📝 [UPDATE_COURSE] Descrição atualizada");
+                    debugUtil.debug("📝 [UPDATE_COURSE]", "Descrição atualizada");
                 }
             }
 
@@ -185,9 +185,9 @@ public class CourseController {
                     try {
                         Difficulty difficulty = Difficulty.valueOf(difficultyStr.toUpperCase());
                         existingCourse.setDifficulty(difficulty);
-                        System.out.println("📝 [UPDATE_COURSE] Dificuldade atualizada: " + difficulty);
+                        debugUtil.debug("📝 [UPDATE_COURSE]", "Dificuldade atualizada: " + difficulty);
                     } catch (IllegalArgumentException e) {
-                        System.err.println("❌ [UPDATE_COURSE] Dificuldade inválida: " + difficultyStr);
+                        debugUtil.debugError("❌ [UPDATE_COURSE]", "Dificuldade inválida: " + difficultyStr);
                         return ResponseEntity.badRequest()
                                 .body(Map.of("error", "Dificuldade inválida: " + difficultyStr));
                     }
@@ -196,7 +196,7 @@ public class CourseController {
 
             // Salvar as alterações
             Course updatedCourse = courseService.save(existingCourse);
-            System.out.println("✅ [UPDATE_COURSE] Curso atualizado com sucesso!");
+            debugUtil.debug("✅ [UPDATE_COURSE]", "Curso atualizado com sucesso!");
 
             // Retornar resposta formatada
             Map<String, Object> response = new HashMap<>();
@@ -210,9 +210,9 @@ public class CourseController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            System.err.println("❌ [UPDATE_COURSE] Erro inesperado: " + e.getClass().getSimpleName());
-            System.err.println("❌ [UPDATE_COURSE] Mensagem: " + e.getMessage());
-            e.printStackTrace();
+            debugUtil.debugError("❌ [UPDATE_COURSE]", "Erro inesperado: " + e.getClass().getSimpleName());
+            debugUtil.debugError("❌ [UPDATE_COURSE]", "Mensagem: " + e.getMessage());
+            debugUtil.debugException("Erro completo em updateCourse", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Erro interno do servidor"));
         }
@@ -223,17 +223,17 @@ public class CourseController {
             @PathVariable Long id,
             Authentication authentication) {
         try {
-            System.out.println("🗑️ [DELETE_COURSE] Iniciando exclusão do curso ID: " + id);
+            debugUtil.debug("🗑️ [DELETE_COURSE]", "Iniciando exclusão do curso ID: " + id);
 
             // Verificar se o curso existe
             Optional<Course> courseOpt = courseService.findById(id);
             if (courseOpt.isEmpty()) {
-                System.err.println("❌ [DELETE_COURSE] Curso não encontrado: " + id);
+                debugUtil.debugError("❌ [DELETE_COURSE]", "Curso não encontrado: " + id);
                 return ResponseEntity.notFound().build();
             }
 
             Course course = courseOpt.get();
-            System.out.println("📚 [DELETE_COURSE] Curso encontrado: " + course.getTitle());
+            debugUtil.debug("📚 [DELETE_COURSE]", "Curso encontrado: " + course.getTitle());
 
             // Verificar permissões do usuário
             String userLogin = authentication.getName();
@@ -243,65 +243,58 @@ public class CourseController {
             boolean isCreator = course.getCreatedBy() != null && course.getCreatedBy().equals(currentUser);
 
             if (!isAdmin && !isCreator) {
-                System.err.println("❌ [DELETE_COURSE] Usuário não autorizado: " + userLogin);
+                debugUtil.debugError("❌ [DELETE_COURSE]", "Usuário não autorizado: " + userLogin);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of("error", "Você não tem permissão para excluir este curso"));
             }
 
-            // Informações sobre módulos relacionados
-//            int moduleCount = course.getModules() != null ? course.getModules().size() : 0;
-//            if (moduleCount > 0) {
-//                System.out.println("⚠️ [DELETE_COURSE] O curso possui " + moduleCount + " módulo(s) que serão excluídos");
-//            }
-
             // Executar exclusão
             courseService.delete(id);
-            System.out.println("✅ [DELETE_COURSE] Curso excluído com sucesso!");
+            debugUtil.debug("✅ [DELETE_COURSE]", "Curso excluído com sucesso!");
 
             // Retornar resposta de sucesso com informações
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Curso excluído com sucesso");
             response.put("courseId", id);
             response.put("courseTitle", course.getTitle());
-//            response.put("modulesDeleted", moduleCount);
 
             return ResponseEntity.ok(response);
 
         } catch (NoSuchElementException e) {
-            System.err.println("❌ [DELETE_COURSE] Curso não encontrado: " + e.getMessage());
+            debugUtil.debugError("❌ [DELETE_COURSE]", "Curso não encontrado: " + e.getMessage());
             return ResponseEntity.notFound().build();
 
         } catch (RuntimeException e) {
-            System.err.println("❌ [DELETE_COURSE] Erro de negócio: " + e.getMessage());
-            e.printStackTrace();
-            
+            debugUtil.debugError("❌ [DELETE_COURSE]", "Erro de negócio: " + e.getMessage());
+            debugUtil.debugException("Erro de runtime em deleteCourse", e);
+
             // Verificar se é erro de constraint de chave estrangeira
-            if (e.getMessage().toLowerCase().contains("constraint") || 
-                e.getMessage().toLowerCase().contains("foreign key") ||
-                e.getMessage().toLowerCase().contains("referential integrity")) {
-                
+            if (e.getMessage().toLowerCase().contains("constraint") ||
+                    e.getMessage().toLowerCase().contains("foreign key") ||
+                    e.getMessage().toLowerCase().contains("referential integrity")) {
+
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(Map.of(
-                            "error", "Não é possível excluir este curso pois ele possui dados relacionados",
-                            "details", "O curso pode ter módulos, matrículas ou outras informações associadas"
+                                "error", "Não é possível excluir este curso pois ele possui dados relacionados",
+                                "details", "O curso pode ter módulos, matrículas ou outras informações associadas"
                         ));
             }
-            
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(
-                        "error", "Erro ao excluir o curso",
-                        "details", e.getMessage()
+                            "error", "Erro ao excluir o curso",
+                            "details", e.getMessage()
                     ));
 
         } catch (Exception e) {
-            System.err.println("❌ [DELETE_COURSE] Erro inesperado: " + e.getClass().getSimpleName());
-            System.err.println("❌ [DELETE_COURSE] Mensagem: " + e.getMessage());
-            e.printStackTrace();
-            
+            debugUtil.debugError("❌ [DELETE_COURSE]", "Erro inesperado: " + e.getClass().getSimpleName());
+            debugUtil.debugError("❌ [DELETE_COURSE]", "Mensagem: " + e.getMessage());
+            debugUtil.debugException("Erro inesperado em deleteCourse", e);
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(
-                        "error", "Erro interno do servidor",
-                        "details", e.getMessage()
+                            "error", "Erro interno do servidor",
+                            "details", e.getMessage()
                     ));
         }
     }
