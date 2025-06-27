@@ -8,12 +8,14 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  console.log('🚀 [API] Requisição saindo:', {
-    method: config.method?.toUpperCase(),
-    url: config.url,
-    baseURL: config.baseURL,
-    fullURL: `${config.baseURL}${config.url}`
-  });
+  if (DEBUG) {
+    console.log('🚀 [API] Requisição saindo:', {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      baseURL: config.baseURL,
+      fullURL: `${config.baseURL}${config.url}`
+    });
+  }
   
   // Só adicionar token se não for rota de login/register
   const isAuthRoute = config.url?.includes('/auth/login') || 
