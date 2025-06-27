@@ -24,7 +24,6 @@ public class CourseController {
 
     private final CourseService courseService;
     private final AuthorizationService authorizationService;
-    private final AuthenticationService authenticationService;
 
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> getAllCourses() {
