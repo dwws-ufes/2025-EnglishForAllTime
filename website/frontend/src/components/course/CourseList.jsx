@@ -43,6 +43,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import CourseEditModal from './CourseEditModal';
+import CourseDeleteModal from './CourseDeleteModal';
 
 const CourseList = () => {
     const [courses, setCourses] = useState([]);
@@ -56,8 +57,15 @@ const CourseList = () => {
     // Estados do modal de edição
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState(null);
+    
+    // Estados do modal de exclusão
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [courseToDelete, setCourseToDelete] = useState(null);
+    
+    // Estados de notificação
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
     
     const { isAdmin } = useAuth();
     const userIsAdmin = isAdmin();
@@ -102,7 +110,36 @@ const CourseList = () => {
             )
         );
         
-        setSnackbarMessage('Curso atualizado com sucesso!');
+        showSnackbar('Curso atualizado com sucesso!', 'success');
+    };
+
+    // Handlers para o modal de exclusão
+    const handleDeleteClick = (course) => {
+        console.log('🗑️ Preparando exclusão do curso:', course);
+        setCourseToDelete(course);
+        setDeleteModalOpen(true);
+    };
+
+    const handleCloseDeleteModal = () => {
+        setDeleteModalOpen(false);
+        setCourseToDelete(null);
+    };
+
+    const handleCourseDeleted = (deletedCourseId) => {
+        console.log('✅ Curso excluído:', deletedCourseId);
+        
+        // Remover curso da lista
+        setCourses(prevCourses => 
+            prevCourses.filter(course => course.id !== deletedCourseId)
+        );
+        
+        showSnackbar('Curso excluído com sucesso!', 'success');
+    };
+
+    // Função para mostrar notificações
+    const showSnackbar = (message, severity = 'success') => {
+        setSnackbarMessage(message);
+        setSnackbarSeverity(severity);
         setSnackbarOpen(true);
     };
 
@@ -333,7 +370,11 @@ const CourseList = () => {
                                                 </IconButton>
                                             </Tooltip>
                                             <Tooltip title="Excluir curso">
-                                                <IconButton size="small" color="error">
+                                                <IconButton 
+                                                    size="small" 
+                                                    color="error"
+                                                    onClick={() => handleDeleteClick(course)}
+                                                >
                                                     <DeleteIcon />
                                                 </IconButton>
                                             </Tooltip>
@@ -472,7 +513,11 @@ const CourseList = () => {
                                                     </IconButton>
                                                 </Tooltip>
                                                 <Tooltip title="Excluir">
-                                                    <IconButton size="small" color="error">
+                                                    <IconButton 
+                                                        size="small" 
+                                                        color="error"
+                                                        onClick={() => handleDeleteClick(course)}
+                                                    >
                                                         <DeleteIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
@@ -608,6 +653,14 @@ const CourseList = () => {
                 onCourseUpdated={handleCourseUpdated}
             />
 
+            {/* Modal de Exclusão */}
+            <CourseDeleteModal
+                open={deleteModalOpen}
+                onClose={handleCloseDeleteModal}
+                course={courseToDelete}
+                onCourseDeleted={handleCourseDeleted}
+            />
+
             {/* Snackbar para notificações */}
             <Snackbar
                 open={snackbarOpen}
@@ -615,7 +668,7 @@ const CourseList = () => {
                 onClose={handleCloseSnackbar}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             >
-                <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+                <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}
                 </Alert>
             </Snackbar>

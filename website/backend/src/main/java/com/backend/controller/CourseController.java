@@ -220,25 +220,90 @@ public class CourseController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> deleteCourse(
+            @PathVariable Long id,
+            Authentication authentication) {
         try {
             System.out.println("🗑️ [DELETE_COURSE] Iniciando exclusão do curso ID: " + id);
 
+            // Verificar se o curso existe
             Optional<Course> courseOpt = courseService.findById(id);
             if (courseOpt.isEmpty()) {
                 System.err.println("❌ [DELETE_COURSE] Curso não encontrado: " + id);
                 return ResponseEntity.notFound().build();
             }
 
+            Course course = courseOpt.get();
+            System.out.println("📚 [DELETE_COURSE] Curso encontrado: " + course.getTitle());
+
+            // Verificar permissões do usuário
+            String userLogin = authentication.getName();
+            User currentUser = authorizationService.loadUserByUsername(userLogin);
+
+            boolean isAdmin = currentUser.getRole() == UserRole.ADMIN;
+            boolean isCreator = course.getCreatedBy() != null && course.getCreatedBy().equals(currentUser);
+
+            if (!isAdmin && !isCreator) {
+                System.err.println("❌ [DELETE_COURSE] Usuário não autorizado: " + userLogin);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Você não tem permissão para excluir este curso"));
+            }
+
+            // Informações sobre módulos relacionados
+//            int moduleCount = course.getModules() != null ? course.getModules().size() : 0;
+//            if (moduleCount > 0) {
+//                System.out.println("⚠️ [DELETE_COURSE] O curso possui " + moduleCount + " módulo(s) que serão excluídos");
+//            }
+
+            // Executar exclusão
             courseService.delete(id);
             System.out.println("✅ [DELETE_COURSE] Curso excluído com sucesso!");
 
-            return ResponseEntity.noContent().build();
+            // Retornar resposta de sucesso com informações
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Curso excluído com sucesso");
+            response.put("courseId", id);
+            response.put("courseTitle", course.getTitle());
+//            response.put("modulesDeleted", moduleCount);
+
+            return ResponseEntity.ok(response);
+
+        } catch (NoSuchElementException e) {
+            System.err.println("❌ [DELETE_COURSE] Curso não encontrado: " + e.getMessage());
+            return ResponseEntity.notFound().build();
+
+        } catch (RuntimeException e) {
+            System.err.println("❌ [DELETE_COURSE] Erro de negócio: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Verificar se é erro de constraint de chave estrangeira
+            if (e.getMessage().toLowerCase().contains("constraint") || 
+                e.getMessage().toLowerCase().contains("foreign key") ||
+                e.getMessage().toLowerCase().contains("referential integrity")) {
+                
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of(
+                            "error", "Não é possível excluir este curso pois ele possui dados relacionados",
+                            "details", "O curso pode ter módulos, matrículas ou outras informações associadas"
+                        ));
+            }
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                        "error", "Erro ao excluir o curso",
+                        "details", e.getMessage()
+                    ));
 
         } catch (Exception e) {
-            System.err.println("❌ [DELETE_COURSE] Erro: " + e.getMessage());
+            System.err.println("❌ [DELETE_COURSE] Erro inesperado: " + e.getClass().getSimpleName());
+            System.err.println("❌ [DELETE_COURSE] Mensagem: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                        "error", "Erro interno do servidor",
+                        "details", e.getMessage()
+                    ));
         }
     }
 
