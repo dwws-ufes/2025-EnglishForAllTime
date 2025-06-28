@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface CourseService {
     List<Course> findAll();
+    List<Course> findAllSorted(String sortBy, String sortDirection);
     Optional<Course> findById(Long id);
     Course save(Course course);
     Course update(Long id, Course course);

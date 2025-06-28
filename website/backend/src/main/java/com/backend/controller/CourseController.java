@@ -28,11 +28,14 @@ public class CourseController {
     private final DebugUtil debugUtil;
 
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getAllCourses() {
+    public ResponseEntity<List<Map<String, Object>>> getAllCourses(
+            @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+            @RequestParam(required = false, defaultValue = "desc") String sortDirection) {
         try {
             debugUtil.debug("🔍 [GET_COURSES]", "Iniciando busca de cursos...");
+            debugUtil.debug("📊 [GET_COURSES]", "Ordenação: " + sortBy + " " + sortDirection);
 
-            List<Course> courses = courseService.findAll();
+            List<Course> courses = courseService.findAllSorted(sortBy, sortDirection);
             debugUtil.debug("📚 [GET_COURSES]", "Total de cursos encontrados: " + courses.size());
 
             // Converter manualmente para Map para evitar problemas de serialização
