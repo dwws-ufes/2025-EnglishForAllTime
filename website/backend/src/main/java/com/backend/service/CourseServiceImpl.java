@@ -4,6 +4,7 @@ import com.backend.domain.Course;
 import com.backend.domain.Difficulty;
 import com.backend.persistence.CourseRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -98,5 +99,31 @@ public class CourseServiceImpl implements CourseService {
             throw new IllegalArgumentException("Invalid difficulty level: " + difficulty + ". Valid values are: "
                     + Difficulty.BEGINNER + ", " + Difficulty.INTERMEDIATE + ", " + Difficulty.ADVANCED);
         }
+    }
+
+    @Override
+    public List<Course> findAllSorted(String sortBy, String sortDirection) {
+        Sort sort;
+
+        // Definir direção da ordenação
+        Sort.Direction direction = "desc".equalsIgnoreCase(sortDirection)
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+
+        // Validar e mapear campos de ordenação
+        switch (sortBy.toLowerCase()) {
+            case "title":
+                sort = Sort.by(direction, "title");
+                break;
+            case "difficulty":
+                sort = Sort.by(direction, "difficulty");
+                break;
+            default:
+                // Ordenação padrão por data de criação (mais recentes primeiro)
+                sort = Sort.by(Sort.Direction.DESC, "createdAt");
+                break;
+        }
+
+        return courseRepository.findAll(sort);
     }
 }

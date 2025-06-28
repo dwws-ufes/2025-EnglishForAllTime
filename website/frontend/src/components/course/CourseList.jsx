@@ -25,7 +25,13 @@ import {
     Avatar,
     Fade,
     Zoom,
-    Snackbar
+    Snackbar,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    ToggleButton,
+    ToggleButtonGroup
 } from '@mui/material';
 import {
     Search as SearchIcon,
@@ -38,7 +44,10 @@ import {
     School as SchoolIcon,
     TrendingUp as TrendingUpIcon,
     Assignment as AssignmentIcon,
-    Star as StarIcon
+    Star as StarIcon,
+    Sort as SortIcon,
+    ArrowUpward as ArrowUpwardIcon,
+    ArrowDownward as ArrowDownwardIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
@@ -54,6 +63,10 @@ const CourseList = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [viewMode, setViewMode] = useState('cards');
     
+    // Estados de ordenação
+    const [sortBy, setSortBy] = useState('createdAt');
+    const [sortDirection, setSortDirection] = useState('desc');
+
     // Estados do modal de edição
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState(null);
@@ -154,8 +167,27 @@ const CourseList = () => {
         (course.difficulty || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // Ordenar cursos
+    const sortedCourses = [...filteredCourses].sort((a, b) => {
+        let aValue = a[sortBy];
+        let bValue = b[sortBy];
+
+        // Ordenação especial para dificuldade
+        if (sortBy === 'difficulty') {
+            const difficultyOrder = { 'BEGINNER': 1, 'INTERMEDIATE': 2, 'ADVANCED': 3 };
+            aValue = difficultyOrder[aValue?.toUpperCase()] || 999;
+            bValue = difficultyOrder[bValue?.toUpperCase()] || 999;
+        }
+
+        if (sortDirection === 'asc') {
+            return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+        } else {
+            return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+        }
+    });
+
     // Paginação
-    const paginatedCourses = filteredCourses.slice(
+    const paginatedCourses = sortedCourses.slice(
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
     );
@@ -600,6 +632,56 @@ const CourseList = () => {
                         </Button>
                     </Box>
                 </Box>
+
+                {/* Controles de ordenação */}
+                <Paper sx={{ p: 2, mb: 3, borderRadius: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <SortIcon fontSize="small" />
+                            <Typography variant="body2" color="text.secondary">
+                                Ordenar por:
+                            </Typography>
+                        </Box>
+
+                        <FormControl size="small" sx={{ minWidth: 150 }}>
+                            <InputLabel>Campo</InputLabel>
+                            <Select
+                                value={sortBy}
+                                label="Campo"
+                                onChange={(e) => setSortBy(e.target.value)}
+                            >
+                                <MenuItem value="title">Título</MenuItem>
+                                <MenuItem value="difficulty">Dificuldade</MenuItem>
+                            </Select>
+                        </FormControl>
+
+                        <ToggleButtonGroup
+                            value={sortDirection}
+                            exclusive
+                            onChange={(e, newDirection) => {
+                                if (newDirection !== null) {
+                                    setSortDirection(newDirection);
+                                }
+                            }}
+                            size="small"
+                        >
+                            <ToggleButton value="asc" aria-label="crescente">
+                                <Tooltip title="Crescente">
+                                    <ArrowUpwardIcon fontSize="small" />
+                                </Tooltip>
+                            </ToggleButton>
+                            <ToggleButton value="desc" aria-label="decrescente">
+                                <Tooltip title="Decrescente">
+                                    <ArrowDownwardIcon fontSize="small" />
+                                </Tooltip>
+                            </ToggleButton>
+                        </ToggleButtonGroup>
+
+                        <Typography variant="caption" color="text.secondary">
+                            {filteredCourses.length} curso(s) encontrado(s)
+                        </Typography>
+                    </Box>
+                </Paper>
             </Box>
 
             {/* Conteúdo */}
