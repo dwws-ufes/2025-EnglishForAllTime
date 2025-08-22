@@ -33,7 +33,12 @@ public class SemanticService {
 
                 log.debug("Tradução encontrada para '{}': {}", word, translation);
                 qexec.close();
-                return Optional.of(translation);
+                if (solution.getLiteral("labelPt") != null) {
+                    String translation = solution.getLiteral("labelPt").getString();
+                    log.debug("Tradução encontrada para '{}': {}", word, translation);
+                    qexec.close();
+                    return Optional.of(translation);
+                }
             }
 
             qexec.close();
