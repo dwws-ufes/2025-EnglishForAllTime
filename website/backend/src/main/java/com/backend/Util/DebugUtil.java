@@ -6,6 +6,9 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+// Pode ser substituido pelo Logger do SLF4J ou Logback, mas aqui é uma implementação simples para debug
+// Existe um nível de implementação de debug que pode ser habilitado ou desabilitado via configuração
+
 @Component
 public class DebugUtil {
 
