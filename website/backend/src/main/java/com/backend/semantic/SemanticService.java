@@ -58,7 +58,21 @@ public class SemanticService {
                 log.warn("Nenhuma tradução encontrada para a palavra: {}", word);
                 return Optional.empty();
             }
+            try (QueryExecution qexec = QueryExecutionFactory.sparqlService(WIKIDATA_ENDPOINT, sparqlQuery)) {
 
+                ResultSet results = qexec.execSelect();
+
+                if (results.hasNext()) {
+                    QuerySolution solution = results.nextSolution();
+                    String translation = solution.getLiteral("labelPt").getString();
+
+                    log.debug("Tradução encontrada para '{}': {}", word, translation);
+                    return Optional.of(translation);
+                }
+
+                log.warn("Nenhuma tradução encontrada para a palavra: {}", word);
+                return Optional.empty();
+            }
         } catch (Exception e) {
             log.error("Erro ao buscar tradução para '{}': {}", word, e.getMessage());
             return Optional.empty();
