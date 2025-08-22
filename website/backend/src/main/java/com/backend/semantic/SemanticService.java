@@ -13,10 +13,51 @@ public class SemanticService {
 
     private final Model model;
     private static final String DBPEDIA_ENDPOINT = "https://dbpedia.org/sparql";
+    private static final String WIKIDATA_ENDPOINT = "https://query.wikidata.org/sparql";
 
     public SemanticService() {
         this.model = ModelFactory.createDefaultModel();
         log.info("SemanticService inicializado");
+    }
+
+    public Optional<String> getTranslation(String word) {
+        try {
+            String sparqlQuery = buildTranslationQuery(word);
+            QueryExecution qexec = QueryExecutionFactory.sparqlService(WIKIDATA_ENDPOINT, sparqlQuery);
+
+            ResultSet results = qexec.execSelect();
+
+            if (results.hasNext()) {
+                QuerySolution solution = results.nextSolution();
+                String translation = solution.getLiteral("labelPt").getString();
+
+                log.debug("Tradução encontrada para '{}': {}", word, translation);
+                qexec.close();
+                return Optional.of(translation);
+            }
+
+            qexec.close();
+            log.warn("Nenhuma tradução encontrada para a palavra: {}", word);
+            return Optional.empty();
+
+        } catch (Exception e) {
+            log.error("Erro ao buscar tradução para '{}': {}", word, e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private String buildTranslationQuery(String word) {
+        return """
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+            
+            SELECT ?labelPt WHERE {
+              ?item rdfs:label "%s"@en .
+              ?item rdfs:label ?labelPt .
+              FILTER(lang(?labelPt) = "pt")
+            }
+            LIMIT 1
+            """.formatted(word);
     }
 
     public Optional<String> getDefinition(String word) {
@@ -30,7 +71,6 @@ public class SemanticService {
                 QuerySolution solution = results.nextSolution();
                 String definition = solution.getLiteral("abstract").getString();
 
-                // Limitar o tamanho da definição para ser mais concisa
                 if (definition.length() > 500) {
                     definition = definition.substring(0, 500) + "...";
                 }
@@ -51,13 +91,12 @@ public class SemanticService {
     }
 
     private String buildDefinitionQuery(String word) {
-        // Capitalizar a primeira letra da palavra para corresponder ao formato DBpedia
         String capitalizedWord = word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase();
 
         return """
             PREFIX dbo: <http://dbpedia.org/ontology/>
             PREFIX dbr: <http://dbpedia.org/resource/>
-            
+
             SELECT ?abstract WHERE {
                 dbr:%s dbo:abstract ?abstract .
                 FILTER (lang(?abstract) = 'en')
