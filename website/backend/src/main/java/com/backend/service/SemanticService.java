@@ -68,8 +68,9 @@ public class SemanticService {
 
                 if (results.hasNext()) {
                     QuerySolution solution = results.nextSolution();
-                    if (solution.getLiteral("abstract") != null) {
-                        String definition = solution.getLiteral("abstract").getString();
+                    var abstractLiteral = solution.getLiteral("abstract");
+                    if (abstractLiteral != null) {
+                        String definition = abstractLiteral.getString();
 
                         if (definition.length() > 500) {
                             definition = definition.substring(0, 500) + "...";
