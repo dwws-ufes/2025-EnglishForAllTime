@@ -1,4 +1,4 @@
-package com.backend.semantic;
+package com.backend.service;
 
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.Model;
@@ -23,51 +23,17 @@ public class SemanticService {
     public Optional<String> getTranslation(String word) {
         try {
             String sparqlQuery = buildTranslationQuery(word);
-            QueryExecution qexec = QueryExecutionFactory.sparqlService(WIKIDATA_ENDPOINT, sparqlQuery);
 
-            ResultSet results = qexec.execSelect();
-
-            if (results.hasNext()) {
-                QuerySolution solution = results.nextSolution();
-                String translation = solution.getLiteral("labelPt").getString();
-
-                log.debug("Tradução encontrada para '{}': {}", word, translation);
-                qexec.close();
-                if (solution.getLiteral("labelPt") != null) {
-                    String translation = solution.getLiteral("labelPt").getString();
-                    log.debug("Tradução encontrada para '{}': {}", word, translation);
-                    qexec.close();
-                    return Optional.of(translation);
-                }
-            }
-
-            qexec.close();
-            log.warn("Nenhuma tradução encontrada para a palavra: {}", word);
             try (QueryExecution qexec = QueryExecutionFactory.sparqlService(WIKIDATA_ENDPOINT, sparqlQuery)) {
-
                 ResultSet results = qexec.execSelect();
 
                 if (results.hasNext()) {
                     QuerySolution solution = results.nextSolution();
-                    String translation = solution.getLiteral("labelPt").getString();
-
-                    log.debug("Tradução encontrada para '{}': {}", word, translation);
-                    return Optional.of(translation);
-                }
-
-                log.warn("Nenhuma tradução encontrada para a palavra: {}", word);
-                return Optional.empty();
-            }
-            try (QueryExecution qexec = QueryExecutionFactory.sparqlService(WIKIDATA_ENDPOINT, sparqlQuery)) {
-
-                ResultSet results = qexec.execSelect();
-
-                if (results.hasNext()) {
-                    QuerySolution solution = results.nextSolution();
-                    String translation = solution.getLiteral("labelPt").getString();
-
-                    log.debug("Tradução encontrada para '{}': {}", word, translation);
-                    return Optional.of(translation);
+                    if (solution.getLiteral("labelPt") != null) {
+                        String translation = solution.getLiteral("labelPt").getString();
+                        log.debug("Tradução encontrada para '{}': {}", word, translation);
+                        return Optional.of(translation);
+                    }
                 }
 
                 log.warn("Nenhuma tradução encontrada para a palavra: {}", word);
@@ -96,27 +62,27 @@ public class SemanticService {
     public Optional<String> getDefinition(String word) {
         try {
             String sparqlQuery = buildDefinitionQuery(word);
-            QueryExecution qexec = QueryExecutionFactory.sparqlService(DBPEDIA_ENDPOINT, sparqlQuery);
 
-            ResultSet results = qexec.execSelect();
+            try (QueryExecution qexec = QueryExecutionFactory.sparqlService(DBPEDIA_ENDPOINT, sparqlQuery)) {
+                ResultSet results = qexec.execSelect();
 
-            if (results.hasNext()) {
-                QuerySolution solution = results.nextSolution();
-                String definition = solution.getLiteral("abstract").getString();
+                if (results.hasNext()) {
+                    QuerySolution solution = results.nextSolution();
+                    if (solution.getLiteral("abstract") != null) {
+                        String definition = solution.getLiteral("abstract").getString();
 
-                if (definition.length() > 500) {
-                    definition = definition.substring(0, 500) + "...";
+                        if (definition.length() > 500) {
+                            definition = definition.substring(0, 500) + "...";
+                        }
+
+                        log.debug("Definição encontrada para '{}': {}", word, definition.substring(0, Math.min(100, definition.length())));
+                        return Optional.of(definition);
+                    }
                 }
 
-                log.debug("Definição encontrada para '{}': {}", word, definition.substring(0, Math.min(100, definition.length())));
-                qexec.close();
-                return Optional.of(definition);
+                log.warn("Nenhuma definição encontrada para a palavra: {}", word);
+                return Optional.empty();
             }
-
-            qexec.close();
-            log.warn("Nenhuma definição encontrada para a palavra: {}", word);
-            return Optional.empty();
-
         } catch (Exception e) {
             log.error("Erro ao buscar definição para '{}': {}", word, e.getMessage());
             return Optional.empty();
