@@ -25,5 +25,17 @@ public class SemanticController {
         }
     }
 
+    @GetMapping("/translation/{word}")
+    public ResponseEntity<?> getTranslation(@PathVariable String word) {
+        var translation = semanticService.getTranslation(word);
+
+        if (translation.isPresent()) {
+            return ResponseEntity.ok().body(new TranslationResponse(word, translation.get()));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     public record DefinitionResponse(String word, String definition) {}
+    public record TranslationResponse(String word, String translation) {}
 }
