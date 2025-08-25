@@ -68,3 +68,32 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+export const searchWord = async (word) => {
+  try {
+    if (DEBUG) {
+      console.log('🔍 [DICTIONARY] Iniciando busca para palavra:', word);
+    }
+
+    const response = await api.get(`/dictionary/search`, {
+      params: { word: word.trim() }
+    });
+
+    if (DEBUG) {
+      console.log('✅ [DICTIONARY] Resultado da busca:', response.data);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error('❌ [DICTIONARY] Erro na busca:', error);
+
+    // Tratamento específico de erros
+    if (error.response?.status === 404) {
+      throw new Error('Palavra não encontrada no dicionário');
+    } else if (error.response?.status === 500) {
+      throw new Error('Erro interno do servidor');
+    } else {
+      throw new Error('Erro ao buscar palavra no dicionário');
+    }
+  }
+};

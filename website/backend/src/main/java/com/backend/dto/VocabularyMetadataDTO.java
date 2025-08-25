@@ -1,10 +1,17 @@
 package com.backend.dto;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 public record VocabularyMetadataDTO(
-        String namespace,
-        String resourceBase,
-        int totalCourses,
-        int totalModules,
+        String vocabularyName,
+        String description,
+        String version,
+        String author,
+        LocalDateTime lastModified,
         int totalWords,
-        String lastGenerated
+        int totalDefinitions,
+        List<String> categories,
+        String license,
+        String format
 ) {}
