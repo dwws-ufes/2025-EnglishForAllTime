@@ -63,7 +63,7 @@ public class VocabularyRdfService {
             // Criar recurso do curso
             Resource courseResource = model.createResource(RESOURCE_BASE + "course/" + course.getId());
             courseResource.addProperty(RDF.type, CourseClass);
-            courseResource.addProperty(RDFS.label, course.getTitle());
+            courseResource.addProperty(RDFS.label, course.getName());
             courseResource.addProperty(hasDifficulty, course.getDifficulty().toString());
 
             // TODO: Implementar processamento de módulos quando a entidade Module estiver criada
