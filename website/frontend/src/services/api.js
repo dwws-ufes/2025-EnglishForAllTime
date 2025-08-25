@@ -21,7 +21,7 @@ api.interceptors.request.use((config) => {
   // Só adicionar token se não for rota de login/register
   const isAuthRoute = config.url?.includes('/auth/login') ||
       config.url?.includes('/auth/register') ||
-      config.url?.includes('/dictionary');  // Dictionary pode não precisar de auth
+      (config.url?.includes('/dictionary') && config.method?.toLowerCase() === 'get');
 
   if (!isAuthRoute) {
     const token = localStorage.getItem('@EnglishForAllTime:token');

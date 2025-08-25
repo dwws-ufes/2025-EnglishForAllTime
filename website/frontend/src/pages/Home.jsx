@@ -26,7 +26,9 @@ import {
   Tab,
   Tabs,
   IconButton,
-  CircularProgress
+  CircularProgress,
+  TextField,
+  Alert
 } from '@mui/material';
 import {
   AccountCircle as AccountCircleIcon,
@@ -36,11 +38,15 @@ import {
   TrendingUp as TrendingUpIcon,
   LibraryBooks as LibraryBooksIcon,
   Dashboard as DashboardIcon,
-  School as SchoolIcon, Settings
+  School as SchoolIcon,
+  Settings,
+  Search as SearchIcon,
+  MenuBook as DictionaryIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import CourseFormModal from '../components/course/CourseFormModal';
 import CourseList from '../components/course/CourseList';
+import { getWordDetails } from '../services/api';
 
 const darkTheme = createTheme({
   palette: {
@@ -65,21 +71,28 @@ function Home() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [activeTab, setActiveTab] = useState(0);
+
+  // Estados do dicionário
+  const [searchTerm, setSearchTerm] = useState('');
+  const [wordDetails, setWordDetails] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const { user, signOut, isAdmin, loading } = useAuth();
 
   // Aguardar carregamento dos dados do usuário
   if (loading) {
     return (
-      <ThemeProvider theme={darkTheme}>
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="100vh"
-        >
-          <CircularProgress size={60} />
-        </Box>
-      </ThemeProvider>
+        <ThemeProvider theme={darkTheme}>
+          <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              minHeight="100vh"
+          >
+            <CircularProgress size={60} />
+          </Box>
+        </ThemeProvider>
     );
   }
 
@@ -92,6 +105,37 @@ function Home() {
     loading
   });
 
+  // Funções do dicionário
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await getWordDetails(searchTerm);
+      setWordDetails(data);
+    } catch (err) {
+      setError(err.message || 'Erro ao buscar a palavra');
+      setWordDetails(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleClearDictionary = () => {
+    setSearchTerm('');
+    setWordDetails(null);
+    setError(null);
+  };
+
+  // Funções existentes
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -137,6 +181,144 @@ function Home() {
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
+
+  // Renderização do dicionário
+  const renderDictionary = () => (
+      <Container maxWidth="md">
+        <Box sx={{ py: 2 }}>
+          <Typography variant="h4" component="h2" gutterBottom align="center">
+            📚 Dicionário Inglês
+          </Typography>
+
+          <Typography variant="subtitle1" color="text.secondary" align="center" sx={{ mb: 4 }}>
+            Pesquise qualquer palavra em inglês e obtenha definições, traduções e exemplos
+          </Typography>
+
+          {/* Campo de busca */}
+          <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+              <TextField
+                  fullWidth
+                  variant="outlined"
+                  placeholder="Digite uma palavra em inglês..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  disabled={isLoading}
+              />
+              <Button
+                  variant="contained"
+                  onClick={handleSearch}
+                  disabled={isLoading || !searchTerm.trim()}
+                  startIcon={isLoading ? <CircularProgress size={20} /> : <SearchIcon />}
+                  sx={{ minWidth: 120 }}
+              >
+                {isLoading ? 'Buscando...' : 'Buscar'}
+              </Button>
+              {(wordDetails || error) && (
+                  <Button
+                      variant="outlined"
+                      onClick={handleClearDictionary}
+                      disabled={isLoading}
+                  >
+                    Limpar
+                  </Button>
+              )}
+            </Box>
+          </Paper>
+
+          {/* Loading */}
+          {isLoading && (
+              <Box display="flex" justifyContent="center" alignItems="center" sx={{ py: 4 }}>
+                <CircularProgress sx={{ mr: 2 }} />
+                <Typography>Buscando palavra...</Typography>
+              </Box>
+          )}
+
+          {/* Erro */}
+          {error && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {error}
+              </Alert>
+          )}
+
+          {/* Resultados */}
+          {wordDetails && !isLoading && (
+              <Paper elevation={2} sx={{ p: 3 }}>
+                <Typography variant="h4" component="h3" gutterBottom color="primary">
+                  {wordDetails.word}
+                </Typography>
+
+                {wordDetails.phonetic && (
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 2, fontStyle: 'italic' }}>
+                      📢 {wordDetails.phonetic}
+                    </Typography>
+                )}
+
+                <Divider sx={{ my: 3 }} />
+
+                {/* Definições */}
+                {wordDetails.meanings && wordDetails.meanings.map((meaning, index) => (
+                    <Box key={index} sx={{ mb: 4 }}>
+                      <Typography variant="h6" color="secondary" gutterBottom>
+                        🔤 {meaning.partOfSpeech}
+                      </Typography>
+
+                      {meaning.definitions && meaning.definitions.map((def, defIndex) => (
+                          <Box key={defIndex} sx={{ ml: 2, mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+                            <Typography variant="body1" sx={{ mb: 1 }}>
+                              <strong>{defIndex + 1}.</strong> {def.definition}
+                            </Typography>
+
+                            {def.example && (
+                                <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                    sx={{ ml: 2, fontStyle: 'italic', p: 1, bgcolor: 'action.hover', borderRadius: 1 }}
+                                >
+                                  💡 <strong>Exemplo:</strong> "{def.example}"
+                                </Typography>
+                            )}
+
+                            {def.synonyms && def.synonyms.length > 0 && (
+                                <Typography variant="body2" color="primary" sx={{ ml: 2, mt: 1 }}>
+                                  🔄 <strong>Sinônimos:</strong> {def.synonyms.join(', ')}
+                                </Typography>
+                            )}
+                          </Box>
+                      ))}
+                    </Box>
+                ))}
+
+                {/* Traduções ou informações adicionais */}
+                {wordDetails.translation && (
+                    <Box sx={{ mt: 3, p: 3, bgcolor: 'primary.dark', borderRadius: 2 }}>
+                      <Typography variant="h6" gutterBottom color="primary.contrastText">
+                        🌍 Tradução:
+                      </Typography>
+                      <Typography variant="body1" color="primary.contrastText">
+                        {wordDetails.translation}
+                      </Typography>
+                    </Box>
+                )}
+              </Paper>
+          )}
+
+          {/* Mensagem inicial */}
+          {!wordDetails && !error && !isLoading && (
+              <Paper elevation={1} sx={{ p: 4, textAlign: 'center' }}>
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  🔍 Digite uma palavra para começar
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Use o campo de busca acima para pesquisar qualquer palavra em inglês.<br/>
+                  Você receberá definições detalhadas, exemplos e traduções.
+                </Typography>
+              </Paper>
+          )}
+        </Box>
+      </Container>
+  );
 
   const renderDashboard = () => (
       <Container maxWidth="lg">
@@ -403,11 +585,17 @@ function Home() {
                     label="Catálogo de Cursos"
                     iconPosition="start"
                 />
+                <Tab
+                    icon={<DictionaryIcon />}
+                    label="Dicionário"
+                    iconPosition="start"
+                />
               </Tabs>
             </Box>
 
             {activeTab === 0 && renderDashboard()}
             {activeTab === 1 && <CourseList />}
+            {activeTab === 2 && renderDictionary()}
 
             {userIsAdmin && (
                 <Fab
