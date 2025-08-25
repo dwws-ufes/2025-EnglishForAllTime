@@ -4,6 +4,7 @@ import com.backend.dto.WordDetailsDTO;
 import com.backend.dto.MeaningDTO;
 import com.backend.dto.DefinitionDTO;
 import com.backend.exception.WordNotFoundException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -85,6 +86,9 @@ public class SemanticService {
 
             throw new WordNotFoundException("Nenhum resultado encontrado para: " + word);
 
+        } catch (JsonProcessingException e) {
+            log.error("❌ Erro ao processar JSON da API do dicionário: {}", e.getMessage());
+            throw new RuntimeException("Erro ao processar resposta da API: " + e.getMessage());
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
                 log.warn("🔍 Palavra '{}' não encontrada na API do dicionário", word);
@@ -142,7 +146,7 @@ public class SemanticService {
             }
         }
 
-        return new WordDetailsDTO(word, phonetic, meanings, null); // translation será adicionada depois
+        return new WordDetailsDTO(word, phonetic, meanings, null);
     }
 
     private String fetchTranslation(String word) {
@@ -158,6 +162,8 @@ public class SemanticService {
                 return jsonResponse.path("responseData").path("translatedText").asText();
             }
 
+        } catch (JsonProcessingException e) {
+            log.warn("⚠️ Erro ao processar JSON da tradução: {}", e.getMessage());
         } catch (Exception e) {
             log.warn("⚠️ Erro na tradução: {}", e.getMessage());
         }

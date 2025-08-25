@@ -91,7 +91,7 @@ export const getWordDetails = async (word) => {
     }
 
     // Endpoint correto baseado no DictionaryController
-    const response = await api.get(`/dictionary/${encodeURIComponent(word.trim())}`);
+    const response = await api.get(`/semantic/word/${encodeURIComponent(word.trim())}`);
 
     if (DEBUG) {
       console.log('✅ [DICTIONARY] WordDetailsDTO recebido:', response.data);
