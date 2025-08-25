@@ -1,7 +1,10 @@
 package com.backend.dto;
 
+import java.util.List;
+
 public record WordDetailsDTO(
         String word,
-        String definition,
+        String phonetic,
+        List<MeaningDTO> meanings,
         String translation
 ) {}

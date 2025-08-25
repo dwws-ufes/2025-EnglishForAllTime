@@ -274,15 +274,15 @@ function Home() {
                                 <Typography
                                     variant="body2"
                                     color="text.secondary"
-                                    sx={{ ml: 2, fontStyle: 'italic', p: 1, bgcolor: 'action.hover', borderRadius: 1 }}
+                                    sx={{ fontStyle: 'italic', mt: 1, ml: 2 }}
                                 >
-                                  💡 <strong>Exemplo:</strong> "{def.example}"
+                                  💡 Exemplo: "{def.example}"
                                 </Typography>
                             )}
 
                             {def.synonyms && def.synonyms.length > 0 && (
                                 <Typography variant="body2" color="primary" sx={{ ml: 2, mt: 1 }}>
-                                  🔄 <strong>Sinônimos:</strong> {def.synonyms.join(', ')}
+                                  🔗 Sinônimos: {def.synonyms.join(', ')}
                                 </Typography>
                             )}
                           </Box>

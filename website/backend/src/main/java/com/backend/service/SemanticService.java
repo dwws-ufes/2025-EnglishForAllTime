@@ -1,114 +1,167 @@
 package com.backend.service;
 
-import org.apache.jena.query.*;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.springframework.stereotype.Service;
+import com.backend.dto.WordDetailsDTO;
+import com.backend.dto.MeaningDTO;
+import com.backend.dto.DefinitionDTO;
+import com.backend.exception.WordNotFoundException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import java.util.Optional;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
 public class SemanticService {
 
-    private final Model model;
-    private static final String DBPEDIA_ENDPOINT = "https://dbpedia.org/sparql";
-    private static final String WIKIDATA_ENDPOINT = "https://query.wikidata.org/sparql";
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
-    public SemanticService() {
-        this.model = ModelFactory.createDefaultModel();
-        log.info("SemanticService inicializado");
+    @Value("${dictionary.api.url:https://api.dictionaryapi.dev/api/v2/entries/en}")
+    private String dictionaryApiUrl;
+
+    @Value("${translation.api.url:https://api.mymemory.translated.net/get}")
+    private String translationApiUrl;
+
+    public SemanticService(RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
     }
 
-    public Optional<String> getTranslation(String word) {
+    public WordDetailsDTO getWordDetails(String word) {
+        log.info("🔍 Buscando detalhes para palavra: {}", word);
+
         try {
-            String sparqlQuery = buildTranslationQuery(word);
+            // 1. Buscar definições na API do dicionário
+            WordDetailsDTO wordDetails = fetchWordDefinitions(word);
 
-            try (QueryExecution qexec = QueryExecutionFactory.sparqlService(WIKIDATA_ENDPOINT, sparqlQuery)) {
-                ResultSet results = qexec.execSelect();
+            // 2. Buscar tradução (opcional, não falha se der erro)
+            try {
+                String translation = fetchTranslation(word);
+                // Como record é imutável, criamos uma nova instância com tradução
+                wordDetails = new WordDetailsDTO(
+                        wordDetails.word(),
+                        wordDetails.phonetic(),
+                        wordDetails.meanings(),
+                        translation
+                );
+            } catch (Exception e) {
+                log.warn("⚠️ Não foi possível obter tradução para '{}': {}", word, e.getMessage());
+                // Continua sem tradução
+            }
 
-                if (results.hasNext()) {
-                    QuerySolution solution = results.nextSolution();
-                    if (solution.getLiteral("labelPt") != null) {
-                        String translation = solution.getLiteral("labelPt").getString();
-                        log.debug("Tradução encontrada para '{}': {}", word, translation);
-                        return Optional.of(translation);
+            log.info("✅ Detalhes encontrados para palavra: {}", word);
+            return wordDetails;
+
+        } catch (Exception e) {
+            log.error("❌ Erro ao buscar palavra '{}': {}", word, e.getMessage());
+            throw new WordNotFoundException("Palavra '" + word + "' não encontrada no dicionário");
+        }
+    }
+
+    private WordDetailsDTO fetchWordDefinitions(String word) {
+        String url = dictionaryApiUrl + "/" + word.toLowerCase().trim();
+
+        log.debug("🌐 Consultando API: {}", url);
+
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                JsonNode jsonArray = objectMapper.readTree(response.getBody());
+
+                if (jsonArray.isArray() && jsonArray.size() > 0) {
+                    JsonNode firstResult = jsonArray.get(0);
+                    return parseWordDetails(firstResult, word);
+                }
+            }
+
+            throw new WordNotFoundException("Nenhum resultado encontrado para: " + word);
+
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                log.warn("🔍 Palavra '{}' não encontrada na API do dicionário", word);
+                throw new WordNotFoundException("Palavra '" + word + "' não encontrada no dicionário");
+            }
+            throw new RuntimeException("Erro na consulta à API do dicionário: " + e.getMessage());
+        }
+    }
+
+    private WordDetailsDTO parseWordDetails(JsonNode wordJson, String originalWord) {
+        // Word
+        String word = wordJson.path("word").asText(originalWord);
+
+        // Phonetic
+        String phonetic = null;
+        JsonNode phoneticsArray = wordJson.path("phonetics");
+        if (phoneticsArray.isArray() && phoneticsArray.size() > 0) {
+            for (JsonNode phoneticNode : phoneticsArray) {
+                String phoneticText = phoneticNode.path("text").asText();
+                if (!phoneticText.isEmpty()) {
+                    phonetic = phoneticText;
+                    break;
+                }
+            }
+        }
+
+        // Meanings
+        List<MeaningDTO> meanings = new ArrayList<>();
+        JsonNode meaningsArray = wordJson.path("meanings");
+        if (meaningsArray.isArray()) {
+            for (JsonNode meaningJson : meaningsArray) {
+                String partOfSpeech = meaningJson.path("partOfSpeech").asText();
+
+                // Definitions
+                List<DefinitionDTO> definitions = new ArrayList<>();
+                JsonNode definitionsArray = meaningJson.path("definitions");
+                if (definitionsArray.isArray()) {
+                    for (JsonNode defJson : definitionsArray) {
+                        String definition = defJson.path("definition").asText();
+                        String example = defJson.path("example").asText(null);
+                        definitions.add(new DefinitionDTO(definition, example));
                     }
                 }
 
-                log.warn("Nenhuma tradução encontrada para a palavra: {}", word);
-                return Optional.empty();
-            }
-        } catch (Exception e) {
-            log.error("Erro ao buscar tradução para '{}': {}", word, e.getMessage());
-            return Optional.empty();
-        }
-    }
-
-    private String buildTranslationQuery(String word) {
-        return """
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-            
-            SELECT ?labelPt WHERE {
-              ?item rdfs:label "%s"@en .
-              ?item rdfs:label ?labelPt .
-              FILTER(lang(?labelPt) = "pt")
-            }
-            LIMIT 1
-            """.formatted(word);
-    }
-
-    public Optional<String> getDefinition(String word) {
-        try {
-            String sparqlQuery = buildDefinitionQuery(word);
-
-            try (QueryExecution qexec = QueryExecutionFactory.sparqlService(DBPEDIA_ENDPOINT, sparqlQuery)) {
-                ResultSet results = qexec.execSelect();
-
-                if (results.hasNext()) {
-                    QuerySolution solution = results.nextSolution();
-                    var abstractLiteral = solution.getLiteral("abstract");
-                    if (abstractLiteral != null) {
-                        String definition = abstractLiteral.getString();
-
-                        if (definition.length() > 500) {
-                            definition = definition.substring(0, 500) + "...";
-                        }
-
-                        log.debug("Definição encontrada para '{}': {}", word, definition.substring(0, Math.min(100, definition.length())));
-                        return Optional.of(definition);
+                // Synonyms
+                List<String> synonyms = new ArrayList<>();
+                JsonNode synonymsArray = meaningJson.path("synonyms");
+                if (synonymsArray.isArray()) {
+                    for (JsonNode synonym : synonymsArray) {
+                        synonyms.add(synonym.asText());
                     }
                 }
 
-                log.warn("Nenhuma definição encontrada para a palavra: {}", word);
-                return Optional.empty();
+                meanings.add(new MeaningDTO(partOfSpeech, definitions, synonyms));
             }
+        }
+
+        return new WordDetailsDTO(word, phonetic, meanings, null); // translation será adicionada depois
+    }
+
+    private String fetchTranslation(String word) {
+        String url = translationApiUrl + "?q=" + word + "&langpair=en|pt";
+
+        log.debug("🌍 Buscando tradução: {}", url);
+
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                JsonNode jsonResponse = objectMapper.readTree(response.getBody());
+                return jsonResponse.path("responseData").path("translatedText").asText();
+            }
+
         } catch (Exception e) {
-            log.error("Erro ao buscar definição para '{}': {}", word, e.getMessage());
-            return Optional.empty();
+            log.warn("⚠️ Erro na tradução: {}", e.getMessage());
         }
-    }
 
-    private String buildDefinitionQuery(String word) {
-        String capitalizedWord = word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase();
-
-        return """
-            PREFIX dbo: <http://dbpedia.org/ontology/>
-            PREFIX dbr: <http://dbpedia.org/resource/>
-
-            SELECT ?abstract WHERE {
-                dbr:%s dbo:abstract ?abstract .
-                FILTER (lang(?abstract) = 'en')
-            }
-            LIMIT 1
-            """.formatted(capitalizedWord);
-    }
-
-    public ResultSet executeQuery(String sparqlQuery) {
-        Query query = QueryFactory.create(sparqlQuery);
-        try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
-            return ResultSetFactory.copyResults(qexec.execSelect());
-        }
+        return null;
     }
 }
