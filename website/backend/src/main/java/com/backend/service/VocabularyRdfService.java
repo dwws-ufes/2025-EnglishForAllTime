@@ -1,7 +1,7 @@
 package com.backend.service;
 
 import com.backend.domain.Course;
-import com.backend.domain.Module;
+// import com.backend.domain.Module;
 import com.backend.persistence.CourseRepository;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.RDF;
@@ -9,9 +9,12 @@ import org.apache.jena.vocabulary.RDFS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
+import com.backend.dto.VocabularyMetadataDTO;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 import java.io.StringWriter;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -40,15 +43,15 @@ public class VocabularyRdfService {
 
         // Definir classes
         Resource CourseClass = model.createResource(NAMESPACE + "Course");
-        Resource ModuleClass = model.createResource(NAMESPACE + "Module");
+        // Resource ModuleClass = model.createResource(NAMESPACE + "Module");
         Resource WordClass = model.createResource(NAMESPACE + "Word");
 
         // Adicionar metadados das classes
         CourseClass.addProperty(RDFS.label, "Course");
         CourseClass.addProperty(RDFS.comment, "Represents an English course");
 
-        ModuleClass.addProperty(RDFS.label, "Module");
-        ModuleClass.addProperty(RDFS.comment, "Represents a course module");
+        // ModuleClass.addProperty(RDFS.label, "Module");
+        // ModuleClass.addProperty(RDFS.comment, "Represents a course module");
 
         WordClass.addProperty(RDFS.label, "Word");
         WordClass.addProperty(RDFS.comment, "Represents an English word with translation");
@@ -60,9 +63,11 @@ public class VocabularyRdfService {
             // Criar recurso do curso
             Resource courseResource = model.createResource(RESOURCE_BASE + "course/" + course.getId());
             courseResource.addProperty(RDF.type, CourseClass);
-            courseResource.addProperty(RDFS.label, course.getName());
+            courseResource.addProperty(RDFS.label, course.getTitle());
             courseResource.addProperty(hasDifficulty, course.getDifficulty().toString());
 
+            // TODO: Implementar processamento de módulos quando a entidade Module estiver criada
+            /*
             // Processar módulos do curso
             for (Module module : course.getModules()) {
                 Resource moduleResource = model.createResource(RESOURCE_BASE + "module/" + module.getId());
@@ -70,7 +75,7 @@ public class VocabularyRdfService {
                 moduleResource.addProperty(RDFS.label, module.getName());
                 moduleResource.addProperty(belongsToCourse, courseResource);
 
-                // Processar palavras do módulo (assumindo que existe uma lista de palavras)
+                // Processar palavras do módulo
                 if (module.getVocabulary() != null && !module.getVocabulary().isEmpty()) {
                     String[] vocabularyEntries = module.getVocabulary().split(",");
 
@@ -84,13 +89,11 @@ public class VocabularyRdfService {
                             wordResource.addProperty(hasWord, word);
                             wordResource.addProperty(belongsToModule, moduleResource);
                             wordResource.addProperty(belongsToCourse, courseResource);
-
-                            // Tentar buscar tradução via SemanticService (opcional)
-                            // wordResource.addProperty(hasTranslation, translation);
                         }
                     }
                 }
             }
+            */
         }
 
         // Serializar modelo para Turtle
@@ -99,5 +102,28 @@ public class VocabularyRdfService {
 
         log.info("Vocabulário RDF gerado com {} triplas", model.size());
         return writer.toString();
+    }
+
+    public VocabularyMetadataDTO getVocabularyMetadata() {
+        try {
+            // Usar dados dos cursos disponíveis
+            List<Course> courses = courseRepository.findAll();
+
+            return new VocabularyMetadataDTO(
+                    "English For All Time Vocabulary",
+                    "Vocabulário completo de inglês para aprendizado com definições e traduções",
+                    "1.0.0",
+                    "English For All Time Team",
+                    LocalDateTime.now(),
+                    0, // TODO: calcular totalWords quando módulos estiverem implementados
+                    0, // TODO: calcular totalDefinitions quando módulos estiverem implementados
+                    Arrays.asList("General", "Technical", "Academic", "Business"),
+                    "MIT License",
+                    "RDF/Turtle"
+            );
+
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao gerar metadados do vocabulário", e);
+        }
     }
 }
