@@ -46,8 +46,11 @@ api.interceptors.response.use(
           url: response.config.url,
           dataType: typeof response.data,
           isArray: Array.isArray(response.data),
-          dataLength: response.data?.length
+          dataLength: Array.isArray(response.data) ? response.data.length : 'not array',
+          hasData: !!response.data,
+          dataKeys: response.data && typeof response.data === 'object' ? Object.keys(response.data) : 'not object'
         });
+        console.log('📄 [API] Dados completos recebidos:', response.data);
       }
       return response;
     },
@@ -79,7 +82,7 @@ api.interceptors.response.use(
 
 export default api;
 
-// Função principal do dicionário
+// Função principal do dicionário - CORRIGIDA para usar a rota correta
 export const getWordDetails = async (word) => {
   try {
     if (DEBUG) {
@@ -90,11 +93,22 @@ export const getWordDetails = async (word) => {
       throw new Error('Palavra não pode estar vazia');
     }
 
-    // Endpoint correto baseado no DictionaryController
-    const response = await api.get(`/semantic/word/${encodeURIComponent(word.trim())}`);
+    // CORRIGIDO: Usando a rota correta do DictionaryController (/api/dictionary/{word})
+    const response = await api.get(`/dictionary/${encodeURIComponent(word.trim())}`);
 
     if (DEBUG) {
-      console.log('✅ [DICTIONARY] WordDetailsDTO recebido:', response.data);
+      console.log('✅ [DICTIONARY] Resposta completa recebida:', {
+        status: response.status,
+        data: response.data,
+        dataType: typeof response.data,
+        hasData: !!response.data,
+        dataKeys: response.data ? Object.keys(response.data) : 'no data'
+      });
+    }
+
+    // Verificar se os dados foram recebidos corretamente
+    if (!response.data) {
+      throw new Error('Nenhum dado foi retornado pela API');
     }
 
     return response.data;
@@ -104,7 +118,8 @@ export const getWordDetails = async (word) => {
         word,
         status: error.response?.status,
         message: error.message,
-        data: error.response?.data
+        data: error.response?.data,
+        responseReceived: !!error.response
       });
     }
 
@@ -125,81 +140,123 @@ export const getWordDetails = async (word) => {
   }
 };
 
-// Função para salvar palavras favoritas (requer autenticação)
+// Nova função para usar o endpoint de aninhamento do SemanticController
+export const getWordDetailsWithNesting = async (word) => {
+  try {
+    if (DEBUG) {
+      console.log('🔗 [SEMANTIC] Iniciando busca com aninhamento para palavra:', word);
+    }
+
+    if (!word || !word.trim()) {
+      throw new Error('Palavra não pode estar vazia');
+    }
+
+    // Usando o novo endpoint de aninhamento
+    const response = await api.get(`/semantic/word/${encodeURIComponent(word.trim())}/nested`);
+
+    if (DEBUG) {
+      console.log('✅ [SEMANTIC] NestedWordDetailsDTO recebido:', response.data);
+    }
+
+    return response.data;
+  } catch (error) {
+    if (DEBUG) {
+      console.error('❌ [SEMANTIC] Erro na busca com aninhamento:', {
+        word,
+        status: error.response?.status,
+        message: error.message,
+        data: error.response?.data
+      });
+    }
+
+    if (error.response?.status === 404) {
+      throw new Error(`Palavra "${word}" não encontrada no dicionário`);
+    } else {
+      throw new Error(error.response?.data?.message || 'Erro ao buscar palavra com aninhamento');
+    }
+  }
+};
+
+// NOVA FUNCIONALIDADE: Rede Semântica de Palavras
+export const getSemanticNetwork = async (word) => {
+  try {
+    if (DEBUG) {
+      console.log('🌐 [SEMANTIC NETWORK] Iniciando busca pela rede semântica da palavra:', word);
+    }
+
+    if (!word || !word.trim()) {
+      throw new Error('Palavra não pode estar vazia');
+    }
+
+    const response = await api.get(`/semantic/semantic-network/${encodeURIComponent(word.trim())}`);
+
+    if (DEBUG) {
+      console.log('✅ [SEMANTIC NETWORK] Rede semântica recebida:', response.data);
+    }
+
+    return response.data;
+  } catch (error) {
+    if (DEBUG) {
+      console.error('❌ [SEMANTIC NETWORK] Erro na busca pela rede semântica:', {
+        word,
+        status: error.response?.status,
+        message: error.message,
+        data: error.response?.data
+      });
+    }
+
+    if (error.response?.status === 404) {
+      throw new Error(`Rede semântica para a palavra "${word}" não encontrada`);
+    } else {
+      throw new Error(error.response?.data?.message || 'Erro ao buscar rede semântica');
+    }
+  }
+};
+
+// REMOVIDO: Funções de favoritos que não existem no backend
+// Estas funções foram comentadas até serem implementadas no backend:
+/*
 export const saveWordToFavorites = async (wordData) => {
-  try {
-    if (DEBUG) {
-      console.log('💾 [DICTIONARY] Salvando palavra nos favoritos:', wordData);
-    }
-
-    const response = await api.post('/dictionary/save', wordData);
-
-    if (DEBUG) {
-      console.log('✅ [DICTIONARY] Palavra salva com sucesso');
-    }
-
-    return response.data;
-  } catch (error) {
-    if (DEBUG) {
-      console.error('❌ [DICTIONARY] Erro ao salvar palavra:', error);
-    }
-    throw error;
-  }
+  // TODO: Implementar no backend primeiro
 };
 
-// Função para buscar palavras salvas (requer autenticação)
 export const getSavedWords = async () => {
-  try {
-    if (DEBUG) {
-      console.log('📚 [DICTIONARY] Buscando palavras salvas');
-    }
-
-    const response = await api.get('/dictionary/saved');
-
-    if (DEBUG) {
-      console.log('✅ [DICTIONARY] Palavras salvas recebidas:', response.data);
-    }
-
-    return response.data;
-  } catch (error) {
-    if (DEBUG) {
-      console.error('❌ [DICTIONARY] Erro ao buscar palavras salvas:', error);
-    }
-    throw error;
-  }
+  // TODO: Implementar no backend primeiro
 };
+*/
 
 // Manter compatibilidade com código existente
 export const searchWord = getWordDetails;
 
-// API do dicionário com todas as funcionalidades
+// API do dicionário com funcionalidades disponíveis
 export const dictionaryApi = {
-  // Busca pública (sem autenticação)
+  // Busca pública (sem autenticação) - rota corrigida
   getWordDetails,
   searchWord: getWordDetails,
 
-  // Funcionalidades que requerem autenticação
+  // Nova funcionalidade de aninhamento
+  getWordDetailsWithNesting,
+
+  // FUTURAS funcionalidades (precisam ser implementadas no backend):
+  /*
   saveWordToFavorites,
   getSavedWords,
-
-  // Futuras funcionalidades
   searchByCategory: async (category) => {
     const response = await api.get(`/dictionary/category/${category}`);
     return response.data;
   },
-
   getWordHistory: async () => {
     const response = await api.get('/dictionary/history');
     return response.data;
   },
-
   deleteFromFavorites: async (wordId) => {
     const response = await api.delete(`/dictionary/saved/${wordId}`);
     return response.data;
   }
+  */
 };
 
-// Exportações adicionais para outras funcionalidades da aplicação
+// Exportações para outras funcionalidades da aplicação (estas estão corretas)
 export const courseApi = {
   getCourses: async () => {
     const response = await api.get('/courses');

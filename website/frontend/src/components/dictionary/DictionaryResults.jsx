@@ -9,7 +9,7 @@ import {
     CardContent,
     Stack
 } from '@mui/material';
-import { Book, Translate, VolumeUp, Lightbulb } from '@mui/icons-material';
+import { Book, Translate, VolumeUp, Lightbulb, Link as LinkIcon } from '@mui/icons-material';
 
 const DictionaryResults = ({ results, searchTerm }) => {
     if (!results) return null;
@@ -33,12 +33,121 @@ const DictionaryResults = ({ results, searchTerm }) => {
                 </Stack>
             </Box>
 
-            {/* Seção de Definições */}
-            {results.definitions && results.definitions.length > 0 && (
+            {/* Seção de Meanings (Nova estrutura do backend) */}
+            {results.meanings && results.meanings.length > 0 && (
                 <Box sx={{ mb: 3 }}>
                     <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Book color="primary" />
-                        Definições:
+                        Significados:
+                    </Typography>
+                    <Stack spacing={3}>
+                        {results.meanings.map((meaning, meaningIndex) => (
+                            <Card key={meaningIndex} variant="outlined" sx={{ border: '2px solid', borderColor: 'primary.light' }}>
+                                <CardContent>
+                                    {/* Part of Speech */}
+                                    {meaning.partOfSpeech && (
+                                        <Chip
+                                            label={meaning.partOfSpeech}
+                                            size="medium"
+                                            color="primary"
+                                            variant="filled"
+                                            sx={{ mb: 2, fontSize: '0.875rem', fontWeight: 'bold' }}
+                                        />
+                                    )}
+
+                                    {/* Definitions */}
+                                    {meaning.definitions && meaning.definitions.length > 0 && (
+                                        <Box sx={{ mb: 3 }}>
+                                            <Typography variant="h6" gutterBottom color="primary.dark">
+                                                Definições:
+                                            </Typography>
+                                            <Stack spacing={2}>
+                                                {meaning.definitions.map((def, defIndex) => (
+                                                    <Box key={defIndex} sx={{ pl: 2, borderLeft: 3, borderColor: 'primary.main' }}>
+                                                        <Typography variant="body1" paragraph sx={{ fontWeight: 500 }}>
+                                                            {def.definition}
+                                                        </Typography>
+                                                        {def.example && (
+                                                            <Box sx={{
+                                                                p: 2,
+                                                                bgcolor: 'success.light',
+                                                                borderRadius: 2,
+                                                                borderLeft: 4,
+                                                                borderColor: 'success.main'
+                                                            }}>
+                                                                <Typography
+                                                                    variant="body2"
+                                                                    color="success.dark"
+                                                                    sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, fontStyle: 'italic' }}
+                                                                >
+                                                                    <Lightbulb fontSize="small" color="success" />
+                                                                    <strong>Exemplo:</strong> "{def.example}"
+                                                                </Typography>
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+                                                ))}
+                                            </Stack>
+                                        </Box>
+                                    )}
+
+                                    {/* Synonyms - SEÇÃO MELHORADA */}
+                                    {meaning.synonyms && meaning.synonyms.length > 0 && (
+                                        <Box sx={{
+                                            mt: 2,
+                                            p: 2,
+                                            bgcolor: 'secondary.light',
+                                            borderRadius: 2,
+                                            border: '2px solid',
+                                            borderColor: 'secondary.main'
+                                        }}>
+                                            <Typography
+                                                variant="subtitle1"
+                                                sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 1,
+                                                    fontWeight: 'bold',
+                                                    mb: 1,
+                                                    color: 'secondary.dark'
+                                                }}
+                                            >
+                                                <LinkIcon color="secondary" />
+                                                Sinônimos ({meaning.synonyms.length}):
+                                            </Typography>
+                                            <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                                                {meaning.synonyms.map((synonym, synIndex) => (
+                                                    <Chip
+                                                        key={synIndex}
+                                                        label={synonym}
+                                                        size="small"
+                                                        variant="filled"
+                                                        color="secondary"
+                                                        sx={{
+                                                            fontWeight: 'bold',
+                                                            '&:hover': {
+                                                                transform: 'scale(1.05)',
+                                                                transition: 'all 0.2s'
+                                                            }
+                                                        }}
+                                                    />
+                                                ))}
+                                            </Stack>
+                                        </Box>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </Stack>
+                </Box>
+            )}
+
+            {/* Fallback para estrutura antiga (se existir) */}
+            {results.definitions && results.definitions.length > 0 && !results.meanings && (
+                <Box sx={{ mb: 3 }}>
+                    <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Book color="primary" />
+                        Definições (formato legado):
                     </Typography>
                     <Stack spacing={2}>
                         {results.definitions.map((def, index) => (
