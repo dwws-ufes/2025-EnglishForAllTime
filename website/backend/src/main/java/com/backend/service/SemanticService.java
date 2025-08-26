@@ -28,6 +28,9 @@ public class SemanticService {
     @Value("${dictionary.api.url:https://api.dictionaryapi.dev/api/v2/entries/en}")
     private String dictionaryApiUrl;
 
+    @Value("${translation.api.url:https://api.mymemory.translated.net/get}")
+    private String translationApiUrl;
+
     public SemanticService(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
@@ -37,12 +40,12 @@ public class SemanticService {
         log.info("🔍 Buscando detalhes para palavra: {}", word);
 
         try {
-            // 1. Buscar definições na API do dicionário (em inglês)
+            // 1. Buscar definições na API do dicionário
             WordDetailsDTO wordDetails = fetchWordDefinitions(word);
 
-            // 2. Buscar tradução usando Google Tradutor
+            // 2. Buscar tradução (opcional, não falha se der erro)
             try {
-                String translation = fetchGoogleTranslation(word);
+                String translation = fetchTranslation(word);
                 // Como record é imutável, criamos uma nova instância com tradução
                 wordDetails = new WordDetailsDTO(
                         wordDetails.word(),
@@ -67,7 +70,7 @@ public class SemanticService {
     private WordDetailsDTO fetchWordDefinitions(String word) {
         String url = dictionaryApiUrl + "/" + word.toLowerCase().trim();
 
-        log.debug("🌐 Consultando API semântica: {}", url);
+        log.debug("🌐 Consultando API: {}", url);
 
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
@@ -146,42 +149,25 @@ public class SemanticService {
         return new WordDetailsDTO(word, phonetic, meanings, null);
     }
 
-    private String fetchGoogleTranslation(String word) {
-        // URL do Google Translate gratuito
-        String url = String.format(
-                "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pt&dt=t&q=%s",
-                word.toLowerCase().trim()
-        );
+    private String fetchTranslation(String word) {
+        String url = translationApiUrl + "?q=" + word + "&langpair=en|pt";
 
-        log.debug("🌍 Buscando tradução no Google: {}", word);
+        log.debug("🌍 Buscando tradução: {}", url);
 
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 JsonNode jsonResponse = objectMapper.readTree(response.getBody());
-
-                // Parse da resposta do Google Translate
-                if (jsonResponse.isArray() && jsonResponse.size() > 0) {
-                    JsonNode translationsArray = jsonResponse.get(0);
-                    if (translationsArray.isArray() && translationsArray.size() > 0) {
-                        JsonNode firstTranslation = translationsArray.get(0);
-                        if (firstTranslation.isArray() && firstTranslation.size() > 0) {
-                            String translatedText = firstTranslation.get(0).asText();
-                            log.debug("✅ Tradução encontrada: {} → {}", word, translatedText);
-                            return translatedText;
-                        }
-                    }
-                }
+                return jsonResponse.path("responseData").path("translatedText").asText();
             }
 
         } catch (JsonProcessingException e) {
             log.warn("⚠️ Erro ao processar JSON da tradução: {}", e.getMessage());
         } catch (Exception e) {
-            log.warn("⚠️ Erro na tradução do Google: {}", e.getMessage());
+            log.warn("⚠️ Erro na tradução: {}", e.getMessage());
         }
 
-        log.debug("❌ Tradução não encontrada para: {}", word);
         return null;
     }
 }
