@@ -7,12 +7,23 @@ import {
     Divider,
     Card,
     CardContent,
-    Stack
+    Stack,
+    Button,
+    Tooltip
 } from '@mui/material';
-import { Book, Translate, VolumeUp, Lightbulb, Link as LinkIcon } from '@mui/icons-material';
+import { Book, Translate, VolumeUp, Lightbulb, Link as LinkIcon, Download } from '@mui/icons-material';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
 const DictionaryResults = ({ results, searchTerm }) => {
     if (!results) return null;
+
+    const handleDownloadRdf = () => {
+        const word = searchTerm || results.word;
+        if (!word) return;
+
+        window.open(`${API_BASE_URL}/data/word/${word}.ttl`, '_blank');
+    };
 
     return (
         <Paper elevation={3} sx={{ p: 3 }}>
@@ -30,6 +41,20 @@ const DictionaryResults = ({ results, searchTerm }) => {
                             color="primary"
                         />
                     )}
+
+                    {/* NOVO BOTÃO DE DOWNLOAD RDF */}
+                    <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end' }}>
+                        <Tooltip title="Baixar dados em formato RDF (.ttl)">
+                            <Button
+                                variant="outlined"
+                                startIcon={<Download />}
+                                onClick={handleDownloadRdf}
+                                size="small"
+                            >
+                                RDF
+                            </Button>
+                        </Tooltip>
+                    </Box>
                 </Stack>
             </Box>
 

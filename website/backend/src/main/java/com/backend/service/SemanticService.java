@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.jena.sparql.exec.http.QueryExecutionHTTP;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +17,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+// <<< 1. NOVOS IMPORTS DA BIBLIOTECA APACHE JENA >>>
+import org.apache.jena.query.*;
+import org.apache.jena.rdf.model.Literal;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 
 @Service
 @Slf4j
@@ -38,7 +45,7 @@ public class SemanticService {
     }
 
     public WordDetailsDTO getWordDetails(String word) {
-        log.info("🔍 Buscando detalhes para palavra: {}", word);
+        log.info("🔍 Buscando detalhes para palavra:  {}", word);
 
         try {
             // 1. Buscar definições na API do dicionário
@@ -68,16 +75,13 @@ public class SemanticService {
         }
     }
 
+    // ... (outros métodos como getWordDetailsWithNesting, findFirstSynonym, etc. permanecem iguais) ...
     public NestedWordDetailsDTO getWordDetailsWithNesting(String word) {
         log.info("🔍 Buscando detalhes com aninhamento para palavra: {}", word);
 
         try {
-            // 1. Buscar detalhes da palavra principal
             WordDetailsDTO mainWordDetails = getWordDetails(word);
-
-            // 2. Encontrar o primeiro sinônimo da primeira definição
             String firstSynonym = findFirstSynonym(mainWordDetails);
-
             WordDetailsDTO nestedSynonymDetails = null;
             if (firstSynonym != null && !firstSynonym.isEmpty()) {
                 log.info("🔗 Buscando detalhes do primeiro sinônimo: {}", firstSynonym);
@@ -90,9 +94,7 @@ public class SemanticService {
             } else {
                 log.info("ℹ️ Nenhum sinônimo encontrado para aninhamento");
             }
-
             return new NestedWordDetailsDTO(mainWordDetails, nestedSynonymDetails);
-
         } catch (Exception e) {
             log.error("❌ Erro ao buscar palavra com aninhamento '{}': {}", word, e.getMessage());
             throw new WordNotFoundException("Palavra '" + word + "' não encontrada no dicionário");
@@ -101,11 +103,8 @@ public class SemanticService {
 
     private String findFirstSynonym(WordDetailsDTO wordDetails) {
         if (wordDetails.meanings() != null && !wordDetails.meanings().isEmpty()) {
-            // Pegar a primeira meaning (primeiro significado)
             MeaningDTO firstMeaning = wordDetails.meanings().get(0);
-
             if (firstMeaning.synonyms() != null && !firstMeaning.synonyms().isEmpty()) {
-                // Retornar o primeiro sinônimo
                 return firstMeaning.synonyms().get(0);
             }
         }
@@ -114,23 +113,17 @@ public class SemanticService {
 
     private WordDetailsDTO fetchWordDefinitions(String word) {
         String url = dictionaryApiUrl + "/" + word.toLowerCase().trim();
-
         log.debug("🌐 Consultando API: {}", url);
-
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 JsonNode jsonArray = objectMapper.readTree(response.getBody());
-
                 if (jsonArray.isArray() && jsonArray.size() > 0) {
                     JsonNode firstResult = jsonArray.get(0);
                     return parseWordDetails(firstResult, word);
                 }
             }
-
             throw new WordNotFoundException("Nenhum resultado encontrado para: " + word);
-
         } catch (JsonProcessingException e) {
             log.error("❌ Erro ao processar JSON da API do dicionário: {}", e.getMessage());
             throw new RuntimeException("Erro ao processar resposta da API: " + e.getMessage());
@@ -144,10 +137,7 @@ public class SemanticService {
     }
 
     private WordDetailsDTO parseWordDetails(JsonNode wordJson, String originalWord) {
-        // Word
         String word = wordJson.path("word").asText(originalWord);
-
-        // Phonetic
         String phonetic = null;
         JsonNode phoneticsArray = wordJson.path("phonetics");
         if (phoneticsArray.isArray() && phoneticsArray.size() > 0) {
@@ -159,15 +149,11 @@ public class SemanticService {
                 }
             }
         }
-
-        // Meanings
         List<MeaningDTO> meanings = new ArrayList<>();
         JsonNode meaningsArray = wordJson.path("meanings");
         if (meaningsArray.isArray()) {
             for (JsonNode meaningJson : meaningsArray) {
                 String partOfSpeech = meaningJson.path("partOfSpeech").asText();
-
-                // Definitions
                 List<DefinitionDTO> definitions = new ArrayList<>();
                 JsonNode definitionsArray = meaningJson.path("definitions");
                 if (definitionsArray.isArray()) {
@@ -177,8 +163,6 @@ public class SemanticService {
                         definitions.add(new DefinitionDTO(definition, example));
                     }
                 }
-
-                // Synonyms
                 List<String> synonyms = new ArrayList<>();
                 JsonNode synonymsArray = meaningJson.path("synonyms");
                 if (synonymsArray.isArray()) {
@@ -186,49 +170,34 @@ public class SemanticService {
                         synonyms.add(synonym.asText());
                     }
                 }
-
                 meanings.add(new MeaningDTO(partOfSpeech, definitions, synonyms));
             }
         }
-
         return new WordDetailsDTO(word, phonetic, meanings, null);
     }
 
     private String fetchTranslation(String word) {
         String url = translationApiUrl + "?q=" + word + "&langpair=en|pt";
-
         log.debug("🌍 Buscando tradução: {}", url);
-
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 JsonNode jsonResponse = objectMapper.readTree(response.getBody());
                 JsonNode responseData = jsonResponse.path("responseData");
                 String translatedText = responseData.path("translatedText").asText();
-
                 if (!translatedText.isEmpty()) {
                     log.debug("✅ Tradução encontrada: {}", translatedText);
                     return translatedText;
                 }
             }
-
             log.warn("⚠️ Nenhuma tradução encontrada para: {}", word);
             return null;
-
         } catch (Exception e) {
             log.error("❌ Erro ao buscar tradução para '{}': {}", word, e.getMessage());
             return null;
         }
     }
 
-    public String getTranslation(String word) {
-        return fetchTranslation(word);
-    }
-
-    public NestedWordDetailsDTO getNestedWordDetails(String word) {
-        return getWordDetailsWithNesting(word);
-    }
 
     // NOVA FUNCIONALIDADE: Rede Semântica de Palavras
     public com.backend.controller.SemanticController.SemanticNetworkDTO getSemanticNetwork(String word) {
@@ -248,11 +217,13 @@ public class SemanticService {
     }
 
     private com.backend.controller.SemanticController.SemanticNetworkDTO buildSemanticNetwork(String word, WordDetailsDTO wordDetails) {
-        // Etimologia simulada (em uma implementação real, isso viria de APIs especializadas)
-        String etymology = generateEtymology(word);
+
+        // <<< 2. SUBSTITUIÇÃO DA ETYMOLOGIA SIMULADA PELA BUSCA REAL NA DBPEDIA >>>
+        // A linha antiga era: String etymology = generateEtymology(word);
+        String etymology = fetchWikidataDefinition(word);
+
         String wordFamily = generateWordFamily(word);
 
-        // Coletar sinônimos de todos os significados
         List<com.backend.controller.SemanticController.RelatedWord> synonyms = new ArrayList<>();
         List<com.backend.controller.SemanticController.RelatedWord> relatedWords = new ArrayList<>();
 
@@ -261,78 +232,149 @@ public class SemanticService {
                 if (meaning.synonyms() != null) {
                     for (String synonym : meaning.synonyms()) {
                         synonyms.add(new com.backend.controller.SemanticController.RelatedWord(
-                            synonym, "synonym", 0.9
+                                synonym, "synonym", 0.9
                         ));
                     }
                 }
             }
         }
 
-        // Gerar antônimos baseados em padrões comuns
         List<com.backend.controller.SemanticController.RelatedWord> antonyms = generateAntonyms(word);
-
-        // Gerar cognatos (palavras relacionadas em outras línguas)
         List<String> cognates = generateCognates(word);
-
-        // Origem da palavra
         com.backend.controller.SemanticController.WordOrigin origin = generateWordOrigin(word);
-
-        // Conexões linguísticas
         List<com.backend.controller.SemanticController.LanguageConnection> connections = generateLanguageConnections(word);
-
-        // Adicionar palavras relacionadas semanticamente
         relatedWords.addAll(generateSemanticRelations(word));
 
         return new com.backend.controller.SemanticController.SemanticNetworkDTO(
-            word,
-            etymology,
-            wordFamily,
-            synonyms,
-            antonyms,
-            relatedWords,
-            cognates,
-            origin,
-            connections
+                word,
+                etymology,
+                wordFamily,
+                synonyms,
+                antonyms,
+                relatedWords,
+                cognates,
+                origin,
+                connections
         );
     }
 
-    private String generateEtymology(String word) {
-        // Simulação de etimologia baseada em padrões comuns
-        // Em uma implementação real, isso consultaria bases de dados etimológicas
-        switch (word.toLowerCase()) {
-            case "happy":
-                return "Do inglês médio 'hap' (sorte, fortuna) + sufixo '-y'. Relacionado ao nórdico antigo 'happ' (sorte).";
-            case "computer":
-                return "Do latim 'computare' (calcular, contar). Primeiro usado em inglês no século XVII para 'pessoa que calcula'.";
-            case "telephone":
-                return "Do grego 'tele' (distante) + 'phone' (som, voz). Criado por Alexander Graham Bell em 1876.";
-            case "democracy":
-                return "Do grego 'demokratia': 'demos' (povo) + 'kratos' (poder, governo).";
-            default:
-                return String.format("A palavra '%s' tem origens complexas e evoluiu através de várias transformações linguísticas.", word);
+    // <<< 3. NOVO MÉTODO PARA CONSUMIR DADOS INTERLIGADOS DA DBPEDIA >>>
+    /**
+     * Busca o resumo (abstract) em inglês de um termo na DBpedia usando SPARQL.
+     * Esta função cumpre o requisito de CONSUMO de dados interligados.
+     * @param term A palavra a ser pesquisada.
+     * @return O resumo do termo, ou uma mensagem padrão caso não seja encontrado.
+     */
+    private String fetchDbpediaAbstract(String term) {
+        log.info("🌐 [DBpedia] Buscando abstract para o termo: {}", term);
+        String formattedTerm = term.substring(0, 1).toUpperCase() + term.substring(1);
+        String sparqlEndpoint = "https://dbpedia.org/sparql";
+
+        String sparqlQuery = """
+            PREFIX dbo: <http://dbpedia.org/ontology/>
+            SELECT ?abstract
+            WHERE {
+              <http://dbpedia.org/resource/%s> dbo:abstract ?abstract .
+              FILTER (lang(?abstract) = 'en')
+            }
+            LIMIT 1
+            """.formatted(formattedTerm);
+
+        // O try-with-resources garante que a conexão será fechada
+        try (QueryExecution qExec = QueryExecutionHTTP.create()
+                .endpoint(sparqlEndpoint)
+                .query(sparqlQuery)
+                .timeout(5000) // Timeout de 5 segundos
+                .build()) {
+
+            ResultSet results = qExec.execSelect();
+
+            if (results.hasNext()) {
+                QuerySolution soln = results.nextSolution();
+                Literal abstractLiteral = soln.getLiteral("abstract");
+                String abstractText = abstractLiteral.getString();
+                log.info("✅ [DBpedia] Abstract encontrado para: {}", term);
+                return abstractText;
+            } else {
+                log.warn("⚠️ [DBpedia] Nenhum abstract em inglês encontrado para: {}", term);
+                return String.format("Nenhuma descrição detalhada (abstract) foi encontrada na DBpedia para '%s'. Esta pode ser uma palavra comum ou um termo técnico sem uma entrada enciclopédica própria.", term);
+            }
+        } catch (Exception e) {
+            log.error("❌ [DBpedia] Erro ao consultar o SPARQL endpoint para '{}'. Causa do erro: ", term, e);
+            return String.format("Não foi possível consultar a base de dados interligados (DBpedia) para o termo '%s' devido a um erro de conexão ou de consulta.", term);
         }
     }
 
+    /**
+     * Busca a definição de um termo no banco de dados lexical da Wikidata usando SPARQL.
+     * Esta função cumpre o requisito de CONSUMO de dados interligados de forma mais apropriada.
+     * @param term A palavra a ser pesquisada.
+     * @return A primeira definição encontrada, ou uma mensagem padrão.
+     */
+    private String fetchWikidataDefinition(String term) {
+        log.info("🌐 [Wikidata] Buscando definição para o termo: {}", term);
+        String sparqlEndpoint = "https://query.wikidata.org/sparql";
+
+        // Usamos LCASE para tornar a busca case-insensitive
+        String sparqlQuery = """
+        PREFIX dct: <http://purl.org/dc/terms/>
+        PREFIX wikibase: <http://wikiba.se/ontology#>
+        PREFIX ontolex: <http://www.w3.org/ns/lemon/ontolex#>
+        PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+        PREFIX wd: <http://www.wikidata.org/entity/>
+
+        SELECT ?definition WHERE {
+          ?lexeme dct:language wd:Q1860;
+                  wikibase:lemma ?lemma;
+                  ontolex:sense ?sense.
+          ?sense skos:definition ?definition.
+          FILTER(LANG(?definition) = "en")
+          FILTER(LCASE(STR(?lemma)) = LCASE("%s"))
+        }
+        LIMIT 1
+        """.formatted(term);
+
+        try (QueryExecution qExec = QueryExecutionHTTP.create()
+                .endpoint(sparqlEndpoint)
+                .query(sparqlQuery)
+                .httpHeader("Accept", "application/sparql-results+json")
+                .httpHeader("User-Agent", "EnglishForAllTimeApp/1.0 (https://github.com/user/project)")
+                .timeout(8000) // Aumentando um pouco o timeout para a Wikidata
+                .build()) {
+
+            ResultSet results = qExec.execSelect();
+
+            if (results.hasNext()) {
+                QuerySolution soln = results.nextSolution();
+                Literal definitionLiteral = soln.getLiteral("definition");
+                String definitionText = definitionLiteral.getString();
+                log.info("✅ [Wikidata] Definição encontrada para: {}", term);
+                return "Definição da Wikidata: " + definitionText; // Adicionando um prefixo para clareza
+            } else {
+                log.warn("⚠️ [Wikidata] Nenhuma definição encontrada para: {}", term);
+                return String.format("Nenhuma definição foi encontrada na base de dados lexical da Wikidata para '%s'.", term);
+            }
+        } catch (Exception e) {
+            log.error("❌ [Wikidata] Erro ao consultar o SPARQL endpoint para '{}'. Causa do erro: ", term, e);
+            return String.format("Não foi possível consultar a base de dados interligados (Wikidata) para o termo '%s'.", term);
+        }
+    }
+
+    // <<< 4. MÉTODO generateEtymology FOI REMOVIDO >>>
+    // Ele não é mais necessário, pois foi substituído pela busca real na DBpedia.
+
+    // ... (O restante dos métodos `generate...` e `generateRdfForWord` permanecem iguais) ...
     private String generateWordFamily(String word) {
-        // Família de palavras baseada em morfologia
         switch (word.toLowerCase()) {
-            case "happy":
-                return "happiness, happily, unhappy, unhappiness";
-            case "computer":
-                return "compute, computation, computational, computing";
-            case "telephone":
-                return "telephonic, telephony, telephonist";
-            case "democracy":
-                return "democratic, democratize, democratization";
-            default:
-                return "Família de palavras relacionadas morfologicamente";
+            case "happy": return "happiness, happily, unhappy, unhappiness";
+            case "computer": return "compute, computation, computational, computing";
+            case "telephone": return "telephonic, telephony, telephonist";
+            case "democracy": return "democratic, democratize, democratization";
+            default: return "Família de palavras relacionadas morfologicamente";
         }
     }
-
     private List<com.backend.controller.SemanticController.RelatedWord> generateAntonyms(String word) {
         List<com.backend.controller.SemanticController.RelatedWord> antonyms = new ArrayList<>();
-
-        // Antônimos baseados em padrões comuns
         switch (word.toLowerCase()) {
             case "happy":
                 antonyms.add(new com.backend.controller.SemanticController.RelatedWord("sad", "antonym", 0.95));
@@ -347,14 +389,10 @@ public class SemanticService {
                 antonyms.add(new com.backend.controller.SemanticController.RelatedWord("cool", "antonym", 0.85));
                 break;
         }
-
         return antonyms;
     }
-
     private List<String> generateCognates(String word) {
         List<String> cognates = new ArrayList<>();
-
-        // Cognatos em diferentes línguas
         switch (word.toLowerCase()) {
             case "computer":
                 cognates.add("computador (Portuguese)");
@@ -372,28 +410,18 @@ public class SemanticService {
                 cognates.add("demokratie (German)");
                 break;
         }
-
         return cognates;
     }
-
     private com.backend.controller.SemanticController.WordOrigin generateWordOrigin(String word) {
-        // Origem linguística da palavra
         switch (word.toLowerCase()) {
-            case "happy":
-                return new com.backend.controller.SemanticController.WordOrigin("Old Norse", "happ", "luck, fortune");
-            case "computer":
-                return new com.backend.controller.SemanticController.WordOrigin("Latin", "computare", "to calculate");
-            case "telephone":
-                return new com.backend.controller.SemanticController.WordOrigin("Greek", "tele + phone", "distant voice");
-            default:
-                return new com.backend.controller.SemanticController.WordOrigin("Unknown", word, "Origin uncertain");
+            case "happy": return new com.backend.controller.SemanticController.WordOrigin("Old Norse", "happ", "luck, fortune");
+            case "computer": return new com.backend.controller.SemanticController.WordOrigin("Latin", "computare", "to calculate");
+            case "telephone": return new com.backend.controller.SemanticController.WordOrigin("Greek", "tele + phone", "distant voice");
+            default: return new com.backend.controller.SemanticController.WordOrigin("Unknown", word, "Origin uncertain");
         }
     }
-
     private List<com.backend.controller.SemanticController.LanguageConnection> generateLanguageConnections(String word) {
         List<com.backend.controller.SemanticController.LanguageConnection> connections = new ArrayList<>();
-
-        // Conexões com outras línguas
         switch (word.toLowerCase()) {
             case "computer":
                 connections.add(new com.backend.controller.SemanticController.LanguageConnection("Portuguese", "computador", "máquina de calcular"));
@@ -406,14 +434,10 @@ public class SemanticService {
                 connections.add(new com.backend.controller.SemanticController.LanguageConnection("French", "heureux", "content"));
                 break;
         }
-
         return connections;
     }
-
     private List<com.backend.controller.SemanticController.RelatedWord> generateSemanticRelations(String word) {
         List<com.backend.controller.SemanticController.RelatedWord> relations = new ArrayList<>();
-
-        // Relações semânticas baseadas em domínios
         switch (word.toLowerCase()) {
             case "computer":
                 relations.add(new com.backend.controller.SemanticController.RelatedWord("technology", "domain", 0.85));
@@ -426,8 +450,58 @@ public class SemanticService {
                 relations.add(new com.backend.controller.SemanticController.RelatedWord("positive", "related", 0.80));
                 break;
         }
-
         return relations;
     }
-}
+    public String generateRdfForWord(String word) throws WordNotFoundException {
+        WordDetailsDTO details = getWordDetails(word); // Reutiliza o método existente
+        String baseUri = "http://englishforalltime.com/vocabulary/";
+        String wordUri = baseUri + word.toLowerCase().replace(" ", "_");
+        StringBuilder rdfBuilder = new StringBuilder();
+        rdfBuilder.append("@prefix vocab: <").append(baseUri).append("> .\n");
+        rdfBuilder.append("@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n");
+        rdfBuilder.append("@prefix dct: <http://purl.org/dc/terms/> .\n");
+        rdfBuilder.append("\n");
+        rdfBuilder.append("<").append(wordUri).append(">\n");
+        rdfBuilder.append("    a vocab:Word ;\n");
+        rdfBuilder.append("    rdfs:label \"").append(details.word()).append("\" ;\n");
+        if (details.phonetic() != null) {
+            rdfBuilder.append("    vocab:phonetic \"").append(details.phonetic()).append("\" ;\n");
+        }
+        if (details.translation() != null) {
+            rdfBuilder.append("    vocab:translation \"").append(details.translation()).append("\"@pt ;\n");
+        }
+        if (details.meanings() != null && !details.meanings().isEmpty()) {
+            for (int i = 0; i < details.meanings().size(); i++) {
+                var meaning = details.meanings().get(i);
+                String meaningUri = wordUri + "/meaning" + (i + 1);
+                rdfBuilder.append("    vocab:hasMeaning <").append(meaningUri).append("> ;\n");
+                rdfBuilder.append("\n<").append(meaningUri).append(">\n");
+                rdfBuilder.append("    a vocab:Meaning ;\n");
+                rdfBuilder.append("    vocab:partOfSpeech \"").append(meaning.partOfSpeech()).append("\" ;\n");
+                for (var def : meaning.definitions()) {
+                    rdfBuilder.append("    dct:description \"").append(def.definition().replace("\"", "\\\"")).append("\" ;\n");
+                    if (def.example() != null) {
+                        rdfBuilder.append("    vocab:example \"").append(def.example().replace("\"", "\\\"")).append("\" ;\n");
+                    }
+                }
+                for (var synonym : meaning.synonyms()) {
+                    String synonymUri = baseUri + synonym.toLowerCase().replace(" ", "_");
+                    rdfBuilder.append("    vocab:hasSynonym <").append(synonymUri).append("> ;\n");
+                }
+                rdfBuilder.setLength(rdfBuilder.length() - 2);
+                rdfBuilder.append(" .\n");
+            }
+        }
+        rdfBuilder.setLength(rdfBuilder.length() - 2);
+        rdfBuilder.append(" .\n");
+        return rdfBuilder.toString();
+    }
 
+    public String getTranslation(String word) {
+        return fetchTranslation(word);
+    }
+
+    public NestedWordDetailsDTO getNestedWordDetails(String word) {
+        return getWordDetailsWithNesting(word);
+    }
+}

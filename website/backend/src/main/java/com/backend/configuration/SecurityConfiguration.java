@@ -41,6 +41,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/api/auth/register").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/dictionary/**").permitAll()  // Permitir GET público
                         .requestMatchers(HttpMethod.POST, "/api/dictionary/save").authenticated()  // Salvar requer auth
+                        .requestMatchers("/data/**").permitAll()
                         // Rotas que requerem autenticação
                         .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/courses").authenticated()

@@ -60,6 +60,7 @@ import { useAuth } from '../contexts/AuthContext';
 import CourseFormModal from '../components/course/CourseFormModal';
 import CourseList from '../components/course/CourseList';
 import { getWordDetails, getSemanticNetwork } from '../services/api';
+import DictionaryResults from '../components/dictionary/DictionaryResults';
 
 const darkTheme = createTheme({
   palette: {
@@ -230,7 +231,10 @@ function Home() {
     setActiveTab(newValue);
   };
 
-  // Renderização do dicionário
+  // Lembre-se de adicionar a importação no topo do arquivo Home.jsx:
+// import DictionaryResults from '../components/dictionary/DictionaryResults';
+
+// Renderização do dicionário (versão modificada)
   const renderDictionary = () => (
       <Container maxWidth="md">
         <Box sx={{ py: 2 }}>
@@ -290,67 +294,22 @@ function Home() {
               </Alert>
           )}
 
-          {/* Resultados */}
+          {/*
+          ============================================================
+          == INÍCIO DA MODIFICAÇÃO ==
+          A lógica de exibição de resultados foi substituída pela
+          chamada ao componente DictionaryResults.
+          ============================================================
+        */}
           {wordDetails && !isLoading && (
-              <Paper elevation={2} sx={{ p: 3 }}>
-                <Typography variant="h4" component="h3" gutterBottom color="primary">
-                  {wordDetails.word}
-                </Typography>
-
-                {wordDetails.phonetic && (
-                    <Typography variant="body1" color="text.secondary" sx={{ mb: 2, fontStyle: 'italic' }}>
-                      📢 {wordDetails.phonetic}
-                    </Typography>
-                )}
-
-                <Divider sx={{ my: 3 }} />
-
-                {/* Definições */}
-                {wordDetails.meanings && wordDetails.meanings.map((meaning, index) => (
-                    <Box key={index} sx={{ mb: 4 }}>
-                      <Typography variant="h6" color="secondary" gutterBottom>
-                        🔤 {meaning.partOfSpeech}
-                      </Typography>
-
-                      {meaning.definitions && meaning.definitions.map((def, defIndex) => (
-                          <Box key={defIndex} sx={{ ml: 2, mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
-                            <Typography variant="body1" sx={{ mb: 1 }}>
-                              <strong>{defIndex + 1}.</strong> {def.definition}
-                            </Typography>
-
-                            {def.example && (
-                                <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    sx={{ fontStyle: 'italic', mt: 1, ml: 2 }}
-                                >
-                                  💡 Exemplo: "{def.example}"
-                                </Typography>
-                            )}
-
-                            {def.synonyms && def.synonyms.length > 0 && (
-                                <Typography variant="body2" color="primary" sx={{ ml: 2, mt: 1 }}>
-                                  🔗 Sinônimos: {def.synonyms.join(', ')}
-                                </Typography>
-                            )}
-                          </Box>
-                      ))}
-                    </Box>
-                ))}
-
-                {/* Traduções ou informações adicionais */}
-                {wordDetails.translation && (
-                    <Box sx={{ mt: 3, p: 3, bgcolor: 'primary.dark', borderRadius: 2 }}>
-                      <Typography variant="h6" gutterBottom color="primary.contrastText">
-                        🌍 Tradução:
-                      </Typography>
-                      <Typography variant="body1" color="primary.contrastText">
-                        {wordDetails.translation}
-                      </Typography>
-                    </Box>
-                )}
-              </Paper>
+              <DictionaryResults results={wordDetails} searchTerm={searchTerm} />
           )}
+          {/*
+          ============================================================
+          == FIM DA MODIFICAÇÃO ==
+          ============================================================
+        */}
+
 
           {/* Mensagem inicial */}
           {!wordDetails && !error && !isLoading && (
