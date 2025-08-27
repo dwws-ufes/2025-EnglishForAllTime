@@ -45,16 +45,11 @@ public class SemanticService {
     }
 
     public WordDetailsDTO getWordDetails(String word) {
-        log.info("🔍 Buscando detalhes para palavra:  {}", word);
-
+        log.info("🔍 Buscando detalhes para palavra: {}", word);
         try {
-            // 1. Buscar definições na API do dicionário
             WordDetailsDTO wordDetails = fetchWordDefinitions(word);
-
-            // 2. Buscar tradução (opcional, não falha se der erro)
             try {
                 String translation = fetchTranslation(word);
-                // Como record é imutável, criamos uma nova instância com tradução
                 wordDetails = new WordDetailsDTO(
                         wordDetails.word(),
                         wordDetails.phonetic(),
@@ -63,19 +58,15 @@ public class SemanticService {
                 );
             } catch (Exception e) {
                 log.warn("⚠️ Não foi possível obter tradução para '{}': {}", word, e.getMessage());
-                // Continua sem tradução
             }
-
             log.info("✅ Detalhes encontrados para palavra: {}", word);
             return wordDetails;
-
         } catch (Exception e) {
             log.error("❌ Erro ao buscar palavra '{}': {}", word, e.getMessage());
             throw new WordNotFoundException("Palavra '" + word + "' não encontrada no dicionário");
         }
     }
 
-    // ... (outros métodos como getWordDetailsWithNesting, findFirstSynonym, etc. permanecem iguais) ...
     public NestedWordDetailsDTO getWordDetailsWithNesting(String word) {
         log.info("🔍 Buscando detalhes com aninhamento para palavra: {}", word);
 
